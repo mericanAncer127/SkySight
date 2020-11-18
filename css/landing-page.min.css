@@ -5,7 +5,7 @@
  */
 
 body {
-    font-family: Ubuntu, 'Helvetica Neue', Helvetica, Arial, sans-serif
+    font-family: 'Ubuntu', 'Helvetica Neue', Helvetica, Arial, sans-serif
 }
 
 h1,
@@ -14,14 +14,14 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: Lato, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Nunito', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: 700
 }
 
 header.masthead {
     position: relative;
     background-color: #343a40;
-    background: url(../img/header.jpeg) no-repeat center center;
+    background: url(../img/header.png) no-repeat center center;
     background-size: cover;
     padding-top: 8rem;
     padding-bottom: 8rem
