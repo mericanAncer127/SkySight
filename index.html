@@ -21,6 +21,9 @@
     <!-- Custom styles for this template -->
     <link href="css/landing-page.min.css" rel="stylesheet">
 
+    <!-- Include Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+
 </head>
 
 <body>
@@ -72,6 +75,12 @@
         </div>
     </section>
 
+    <section class="section m-5" id="About">
+        <div class="container-fluid text-center px-5">
+            <button id="checkout-button">Checkout</button>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer bg-light">
         <div class="container">
@@ -114,6 +123,61 @@
     <!-- Bootstrap core JavaScript -->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-app.js"></script>
+
+    <!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
+    <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-analytics.js"></script>
+
+    <script>
+        // Initialize firebase
+        var firebaseConfig = {
+            apiKey: "AIzaSyDr-mth7wWJyd4Ycx-VpPQIULoadUyrFeQ",
+            authDomain: "skysight-2ed81.firebaseapp.com",
+            databaseURL: "https://skysight-2ed81.firebaseio.com",
+            projectId: "skysight-2ed81",
+            storageBucket: "skysight-2ed81.appspot.com",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <script type="text/javascript">
+        // Create an instance of the Stripe object with your publishable API key
+        var stripe = Stripe('pk_test_51HodZxEjZD5yOZvD58rklUh94Z4D2tBrbShxBsEMLrnbSs52zrGBRRzvG2ZGdfDLVFk0knNHjcmDXxVIz81c9etr00WpHesVgz');
+        var checkoutButton = document.getElementById('checkout-button');
+
+        checkoutButton.addEventListener('click', function() {
+            // Create a new Checkout Session using the server-side endpoint you
+            // created in step 3.
+            const proxyurl = "https://cors-anywhere.herokuapp.com/";
+
+            fetch(proxyurl + 'https://us-central1-skysight-2ed81.cloudfunctions.net/checkout', {
+                    method: 'POST',
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(session) {
+                    return stripe.redirectToCheckout({
+                        sessionId: session.id
+                    });
+                })
+                .then(function(result) {
+                    // If `redirectToCheckout` fails due to a browser or network
+                    // error, you should display the localized error message to your
+                    // customer using `error.message`.
+                    if (result.error) {
+                        alert(result.error.message);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
 
 </body>
 

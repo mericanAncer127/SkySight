@@ -31,8 +31,10 @@
     "dependencies": {
         "@fortawesome/fontawesome-free": "5.15.1",
         "bootstrap": "4.5.3",
+        "express": "^4.17.1",
         "jquery": "3.5.1",
-        "simple-line-icons": "2.5.5"
+        "simple-line-icons": "2.5.5",
+        "stripe": "^7.63.0"
     },
     "devDependencies": {
         "browser-sync": "2.26.13",
