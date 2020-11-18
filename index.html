@@ -21,8 +21,9 @@
     <!-- Custom styles for this template -->
     <link href="css/landing-page.min.css" rel="stylesheet">
 
-    <!-- Include Stripe.js -->
-    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDuzjwqJUNWx_fbqWKHwMnd5637NICbWgc&libraries=places"></script>
+
+    <link rel="icon" href="img/roof.svg">
 
 </head>
 
@@ -32,7 +33,7 @@
     <nav class="navbar navbar-expand-md fixed-top bg-light">
         <div class="container-fluid">
             <a class="navbar-brand mx-auto" style="font-size: 32px; color: black;" href="./index.html">SkySight</a>
-            <button class="btn btn-outline-success my-2 my-sm-0 mx-auto" type="submit">Order Measurements</button>
+            <button id="order_report" class="btn btn-outline-success my-2 my-sm-0 mx-auto" type="submit">Order Roof Report</button>
         </div>
     </nav>
 
@@ -75,14 +76,181 @@
         </div>
     </section>
 
-    <section class="section m-5" id="About">
+    <section class="section p-5 bg-light" id="Order">
+        <div class="container text-center">
+            <h1 class="m-3">Order Roof Report</h1>
+            <p class="text-secondary">Your payment will be authorized, but not processed until your Roof Report is complete</p>
+            <form id="mail_form">
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="fname">First Name</label>
+                        <input type="text" class="form-control form-control-lg" id="fname" required>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="lname">Last Name</label>
+                        <input type="text" class="form-control form-control-lg" id="lname">
+                    </div>
+                </div>
+                <div class="row d-flex justify-content-center">
+                    <div class="col-md-6 form-group">
+                        <label for="business">Business</label>
+                        <input type="text" class="form-control form-control-lg" id="business" required>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" class="form-control form-control-lg" required>
+                    </div>
+                </div>
+                <div class="row d-flex justify-content-center">
+                    <div class="col-md-7 form-group">
+                        <label for="address">Address</label>
+                        <input type="address" id="address" class="form-control form-control-lg" required></input>
+                    </div>
+                </div>
+                <div class="row d-flex justify-content-center">
+                    <div class="col-md-7 form-group">
+                        <label for="messsage">Additional Information</label>
+                        <textarea name="message" id="message" class="form-control form-control-lg" cols="30" rows="7"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content" style="text-align: center;">
+                    <div class="modal-header text-center">
+                        <h5 class="col-12 modal-title text-center" id="exampleModalLabel">Thank you for using SkySight!</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>We are reviewing your order and will email your Roof Report shortly</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section p-0 bg-light" id="Pay">
         <div class="container-fluid text-center px-5">
-            <button id="checkout-button">Checkout</button>
+            <div id="smart-button-container">
+                <div style="text-align: center;">
+                    <div id="paypal-button-container"></div>
+                </div>
+            </div>
+            <script src="https://www.paypal.com/sdk/js?client-id=AVxzdYTReY12Py8W5y_1yGnjNI0DgNYFokLHlwKpbCLirXkzpLctr-jWczwKJ2dskC6PFNdZ6HRahZEu&currency=USD&intent=authorize" data-sdk-integration-source="button-factory"></script>
+
+            <!-- The core Firebase JS SDK is always required and must be listed first -->
+            <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-app.js"></script>
+
+            <!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+            <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-analytics.js"></script>
+
+            <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-database.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-database.js"></script>
+
+            <script>
+                // Your web app's Firebase configuration
+                // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+                var firebaseConfig = {
+                    apiKey: "AIzaSyDcfNiX_G3-Erw8aQ_BEPPTjc_EVhbxQVs",
+                    authDomain: "skysight-2ed81.firebaseapp.com",
+                    databaseURL: "https://skysight-2ed81.firebaseio.com",
+                    projectId: "skysight-2ed81",
+                    storageBucket: "skysight-2ed81.appspot.com",
+                    messagingSenderId: "118321681215",
+                    appId: "1:118321681215:web:2e0fe75b03dd1b47ebf98a",
+                    measurementId: "G-WRFJ15HJ9P"
+                };
+                // Initialize Firebase
+                firebase.initializeApp(firebaseConfig);
+                firebase.analytics();
+            </script>
+
+            <script>
+                function initPayPalButton() {
+                    paypal.Buttons({
+                        style: {
+                            shape: 'rect',
+                            color: 'blue',
+                            layout: 'vertical',
+                            label: 'paypal',
+                        },
+
+                        createOrder: function(data, actions) {
+                            return actions.order.create({
+                                purchase_units: [{
+                                    "description": "SkySight Roof Report",
+                                    "amount": {
+                                        "currency_code": "USD",
+                                        "value": 15
+                                    }
+                                }]
+                            });
+                        },
+
+                        onApprove: function(data, actions) {
+                            // Authorize the transaction
+                            actions.order.authorize().then(function(authorization) {
+                                //shows modal if everything went well.
+                                $('#exampleModal').modal('show');
+
+                                // Get the authorization id
+                                var authorizationID = authorization.purchase_units[0].payments.authorizations[0].id
+
+                                //grab a form
+                                const form = document.getElementById('mail_form');
+
+                                let fname = document.getElementById('fname');
+                                let lname = document.getElementById('lname');
+                                let business = document.getElementById('business');
+                                let email = document.getElementById('email');
+                                let address = document.getElementById('address');
+                                let message = document.getElementById('message');
+
+                                //create a functions to push
+                                function firebasePush(input) {
+                                    //push itself
+                                    var mailsRef = firebase.database().ref('orders').push().set({
+                                        fname: input.fname.value,
+                                        lname: input.lname.value,
+                                        business: input.business.value,
+                                        email: input.email.value,
+                                        location: input.location.value,
+                                        message: input.message.value,
+                                        orderID: input.orderID,
+                                        authID: input.authID
+                                    });
+                                }
+                                firebasePush({
+                                    "fname": fname,
+                                    "lname": lname,
+                                    "business": business,
+                                    "email": email,
+                                    "location": address,
+                                    "message": message,
+                                    "orderID": data.orderID,
+                                    "authID": authorizationID
+                                });
+                            });
+
+                            $('#mail_form')[0].reset();
+                        },
+
+                        onError: function(err) {
+                            console.log(err);
+                        }
+                    }).render('#paypal-button-container');
+                }
+                initPayPalButton();
+            </script>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="footer bg-light">
+    <footer class="footer">
         <div class="container">
             <div class="row">
                 <div class="col-lg-6 h-100 text-center text-lg-left my-auto">
@@ -123,62 +291,20 @@
     <!-- Bootstrap core JavaScript -->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-app.js"></script>
-
-    <!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
-    <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-analytics.js"></script>
-
     <script>
-        // Initialize firebase
-        var firebaseConfig = {
-            apiKey: "AIzaSyDr-mth7wWJyd4Ycx-VpPQIULoadUyrFeQ",
-            authDomain: "skysight-2ed81.firebaseapp.com",
-            databaseURL: "https://skysight-2ed81.firebaseio.com",
-            projectId: "skysight-2ed81",
-            storageBucket: "skysight-2ed81.appspot.com",
-        };
+        document.getElementById("order_report").addEventListener("click", function() {
+            $('html, body').animate({
+                scrollTop: $("#Order").offset().top
+            }, 1500);
+        })
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        function initialize() {
+            var input = document.getElementById('address');
+            new google.maps.places.Autocomplete(input);
+        }
+
+        google.maps.event.addDomListener(window, 'load', initialize);
     </script>
-
-    <script type="text/javascript">
-        // Create an instance of the Stripe object with your publishable API key
-        var stripe = Stripe('pk_test_51HodZxEjZD5yOZvD58rklUh94Z4D2tBrbShxBsEMLrnbSs52zrGBRRzvG2ZGdfDLVFk0knNHjcmDXxVIz81c9etr00WpHesVgz');
-        var checkoutButton = document.getElementById('checkout-button');
-
-        checkoutButton.addEventListener('click', function() {
-            // Create a new Checkout Session using the server-side endpoint you
-            // created in step 3.
-            const proxyurl = "https://cors-anywhere.herokuapp.com/";
-
-            fetch(proxyurl + 'https://us-central1-skysight-2ed81.cloudfunctions.net/checkout', {
-                    method: 'POST',
-                })
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(function(session) {
-                    return stripe.redirectToCheckout({
-                        sessionId: session.id
-                    });
-                })
-                .then(function(result) {
-                    // If `redirectToCheckout` fails due to a browser or network
-                    // error, you should display the localized error message to your
-                    // customer using `error.message`.
-                    if (result.error) {
-                        alert(result.error.message);
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Error:', error);
-                });
-        });
-    </script>
-
 </body>
 
 </html>
