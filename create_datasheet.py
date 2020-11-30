@@ -80,7 +80,7 @@ def create_length_graphic(lines, folder):
         midpoint = get_midpoint((x_1, y_1), (x_2, y_2))
 
         plt.plot([x_1,x_2], [y_1,y_2],c='k')
-        t = plt.text(midpoint[0], midpoint[1], get_letter_id(i+1), c='w', weight="bold")
+        t = plt.text(midpoint[0], midpoint[1], get_letter_id(i+1), c='w', weight="bold", fontsize=7)
         t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
     
     plt.savefig(os.path.join(folder, "lengths"))
@@ -109,7 +109,7 @@ def create_face_graphic(lines, folder):
     for i, polygon in enumerate(polygons):
         centroid = polygon.centroid
 
-        t = plt.text(centroid.x, centroid.y, get_letter_id(i+1), c='w', weight="bold")
+        t = plt.text(centroid.x, centroid.y, get_letter_id(i+1), c='w', weight="bold", fontsize=7)
         t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
 
     plt.savefig(os.path.join(folder, "faces"))

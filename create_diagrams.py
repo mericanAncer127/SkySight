@@ -88,7 +88,7 @@ def create_length_diagram(lines, lengths, colors, folder):
         midpoint = get_midpoint((x_1, y_1), (x_2, y_2))
 
         plt.plot([x_1,x_2], [y_1,y_2], c=colors[i])
-        t = plt.text(midpoint[0], midpoint[1], lengths[i], c='k', weight="bold")
+        t = plt.text(midpoint[0], midpoint[1], lengths[i], c='k', weight="bold", fontsize=7)
         t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
     
     plt.savefig(os.path.join(folder, "Length"))
@@ -125,7 +125,7 @@ def create_face_diagrams(lines, areas, pitches, folder):
         for i, polygon in enumerate(polygons):
             centroid = polygon.centroid
             
-            t = plt.text(centroid.x, centroid.y, int(data[i]), c='k', weight="bold")
+            t = plt.text(centroid.x, centroid.y, int(data[i]), c='k', weight="bold", fontsize=7)
             t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
 
         plt.savefig(os.path.join(folder, diagram_name))
