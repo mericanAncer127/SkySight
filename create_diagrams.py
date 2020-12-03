@@ -75,7 +75,7 @@ def get_line_segments(lines):
 
     return segments
 
-def create_length_diagram(lines, lengths, colors, folder):
+def create_length_diagram(lines, lengths, colors, folder, fontsize=8):
     fig, ax = plt.subplots()
     ax.set_aspect("equal")
     plt.axis('off')
@@ -88,14 +88,14 @@ def create_length_diagram(lines, lengths, colors, folder):
         midpoint = get_midpoint((x_1, y_1), (x_2, y_2))
 
         plt.plot([x_1,x_2], [y_1,y_2], c=colors[i])
-        t = plt.text(midpoint[0], midpoint[1], lengths[i], c='k', weight="bold", fontsize=7)
-        t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
+        t = plt.text(midpoint[0], midpoint[1], lengths[i], c='k', weight="bold", fontsize=fontsize)
+        # t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
     
-    plt.savefig(os.path.join(folder, "Length"))
+    plt.savefig(os.path.join(folder, "Length"), dpi=400)
     plt.close()
     return
 
-def create_face_diagrams(lines, areas, pitches, folder):
+def create_face_diagrams(lines, areas, pitches, folder, fontsize=8):
 
     _lines = []
     for i, line in enumerate(lines):
@@ -123,18 +123,21 @@ def create_face_diagrams(lines, areas, pitches, folder):
                 c='k')
 
         for i, polygon in enumerate(polygons):
-            centroid = polygon.centroid
+            point = polygon.representative_point()
             
-            t = plt.text(centroid.x, centroid.y, int(data[i]), c='k', weight="bold", fontsize=7)
-            t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
+            t = plt.text(point.x, point.y, int(data[i]), c='k', weight="bold", fontsize=fontsize)
+            # t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
 
-        plt.savefig(os.path.join(folder, diagram_name))
+        plt.savefig(os.path.join(folder, diagram_name), dpi=400)
         plt.close()
 
     return
 
 def get_data(folder):
     df = pd.read_csv(glob(folder + "/*.csv")[0])
+
+    for key in ["R","H","V","K","E"]:
+        print("{} length: {}".format(key, sum(df.loc[df["Type (R, H, V, K, E)"] == key]["Length (ft.)"])))
 
     return (
         [COLOR_DICT[key] for key in df["Type (R, H, V, K, E)"]],
@@ -143,7 +146,7 @@ def get_data(folder):
         list(df["Pitch (0-12)"])
         )
 
-def main(folder):
+def main(folder, fontsize):
     drawing = ezdxf.readfile(glob(folder+"/*.dxf")[0])
     msp = drawing.modelspace()
 
@@ -151,16 +154,17 @@ def main(folder):
 
     colors, lengths, areas, pitches = get_data(folder)
 
-    create_length_diagram(lines, lengths, colors, folder)
+    create_length_diagram(lines, lengths, colors, folder, fontsize)
 
-    create_face_diagrams(lines, areas, pitches, folder)
+    create_face_diagrams(lines, areas, pitches, folder, fontsize)
 
     return
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--f", dest="folder")
+    parser.add_argument("--s", dest="fontsize", type=int)
 
     args = parser.parse_args()
 
-    main(args.folder)
+    main(args.folder, args.fontsize)

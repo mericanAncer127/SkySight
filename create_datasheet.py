@@ -33,7 +33,7 @@ def point_lies_on_line(p, l):
     """
     dist_1 = distance(p,l[0])
     dist_2 = distance(p,l[1])
-    return dist_1 != 0 and dist_2 != 0 and dist_1 + dist_2 == distance(l[0],l[1])
+    return dist_1 != 0 and dist_2 != 0 and round(dist_1 + dist_2,2) == round(distance(l[0],l[1]),2)
 
 def get_line_segments(lines):
     """
@@ -67,7 +67,7 @@ def get_line_segments(lines):
 
     return segments
 
-def create_length_graphic(lines, folder):
+def create_length_graphic(lines, folder, fontsize=8):
     fig, ax = plt.subplots()
     ax.set_aspect("equal")
     plt.axis('off')
@@ -80,14 +80,15 @@ def create_length_graphic(lines, folder):
         midpoint = get_midpoint((x_1, y_1), (x_2, y_2))
 
         plt.plot([x_1,x_2], [y_1,y_2],c='k')
-        t = plt.text(midpoint[0], midpoint[1], get_letter_id(i+1), c='w', weight="bold", fontsize=7)
-        t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
+        t = plt.text(midpoint[0], midpoint[1], get_letter_id(i+1), c='k', weight="bold", fontsize=fontsize)
+        # t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
     
-    plt.savefig(os.path.join(folder, "lengths"))
+    plt.savefig(os.path.join(folder, "lengths"), dpi=400)
+    plt.show()
     plt.close()
     return
 
-def create_face_graphic(lines, folder):
+def create_face_graphic(lines, folder, fontsize=8):
     fig, ax = plt.subplots()
     ax.set_aspect("equal")
     plt.axis('off')
@@ -106,13 +107,15 @@ def create_face_graphic(lines, folder):
 
     polygons = list(polygonize(line_segments))
 
+    plt.savefig(os.path.join(folder, "blank"))
     for i, polygon in enumerate(polygons):
-        centroid = polygon.centroid
+        point = polygon.representative_point()
 
-        t = plt.text(centroid.x, centroid.y, get_letter_id(i+1), c='w', weight="bold", fontsize=7)
-        t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
+        t = plt.text(point.x, point.y, get_letter_id(i+1), c='k', weight="bold", fontsize=fontsize)
+        # t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
 
-    plt.savefig(os.path.join(folder, "faces"))
+    plt.savefig(os.path.join(folder, "faces"), dpi=400)
+    plt.show()
     plt.close()
 
     return len(polygons)
@@ -136,7 +139,7 @@ def create_data_sheet(line_count, face_count, folder):
 
     return
 
-def main(folder):
+def main(folder, fontsize):
     """
     Creates graphics and accompanying CSV file for
     measurement labeling.
@@ -153,9 +156,9 @@ def main(folder):
 
     lines = msp.query("LINE")
 
-    create_length_graphic(lines, folder)
+    create_length_graphic(lines, folder, fontsize)
 
-    face_count = create_face_graphic(lines, folder)
+    face_count = create_face_graphic(lines, folder, fontsize)
 
     create_data_sheet(len(lines), face_count, folder)
 
@@ -164,7 +167,8 @@ def main(folder):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--f", dest="folder")
+    parser.add_argument("--s", dest="fontsize", type=int)
 
     args = parser.parse_args()
 
-    main(args.folder)
+    main(args.folder, args.fontsize)
