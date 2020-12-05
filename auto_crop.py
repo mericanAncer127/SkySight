@@ -57,7 +57,7 @@ def auto_crop(folder):
 
     plt.tight_layout()
     plt.savefig(folder+"/views", dpi=1500)
-    plt.show()
+    # plt.show()
 
     return
 

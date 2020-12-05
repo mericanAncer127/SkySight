@@ -79,7 +79,7 @@ def create_length_graphic(lines, folder, fontsize=8):
 
         midpoint = get_midpoint((x_1, y_1), (x_2, y_2))
 
-        plt.plot([x_1,x_2], [y_1,y_2],c='k')
+        plt.plot([x_1,x_2], [y_1,y_2],c='k',alpha=0.4)
         t = plt.text(midpoint[0], midpoint[1], get_letter_id(i+1), c='k', weight="bold", fontsize=fontsize)
         # t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
     
@@ -101,7 +101,7 @@ def create_face_graphic(lines, folder, fontsize=8):
 
         _lines.append(((x_1,y_1),(x_2,y_2)))
 
-        plt.plot([x_1,x_2], [y_1,y_2],c='k')
+        plt.plot([x_1,x_2], [y_1,y_2],c='k',alpha=0.4)
     
     line_segments = get_line_segments(_lines)
 

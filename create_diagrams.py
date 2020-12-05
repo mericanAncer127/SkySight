@@ -87,7 +87,7 @@ def create_length_diagram(lines, lengths, colors, folder, fontsize=8):
 
         midpoint = get_midpoint((x_1, y_1), (x_2, y_2))
 
-        plt.plot([x_1,x_2], [y_1,y_2], c=colors[i])
+        plt.plot([x_1,x_2], [y_1,y_2], c=colors[i], alpha=0.5)
         t = plt.text(midpoint[0], midpoint[1], lengths[i], c='k', weight="bold", fontsize=fontsize)
         # t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
     
@@ -104,8 +104,6 @@ def create_face_diagrams(lines, areas, pitches, folder, fontsize=8):
 
         _lines.append(((x_1,y_1),(x_2,y_2)))
 
-        plt.plot([x_1,x_2], [y_1,y_2],c='k')
-    
     line_segments = get_line_segments(_lines)
 
     polygons = list(polygonize(line_segments))
@@ -120,7 +118,7 @@ def create_face_diagrams(lines, areas, pitches, folder, fontsize=8):
             plt.plot(
                 [_line[0][0],_line[1][0]],
                 [_line[0][1],_line[1][1]],
-                c='k')
+                c='k', alpha=0.4)
 
         for i, polygon in enumerate(polygons):
             point = polygon.representative_point()
@@ -136,8 +134,17 @@ def create_face_diagrams(lines, areas, pitches, folder, fontsize=8):
 def get_data(folder):
     df = pd.read_csv(glob(folder + "/*.csv")[0])
 
-    for key in ["R","H","V","K","E"]:
-        print("{} length: {}".format(key, sum(df.loc[df["Type (R, H, V, K, E)"] == key]["Length (ft.)"])))
+    try:
+        print("Lengths:")
+        for key in ["R","H","V","K","E"]:
+            print("{} length: {}".format(key, sum(df.loc[df["Type (R, H, V, K, E)"] == key]["Length (ft.)"])))
+    except:
+        pass
+
+    try:
+        print("\nTotal Area: {}".format(sum(df["Area (ft.^2)"].fillna(0))))
+    except:
+        pass
 
     return (
         [COLOR_DICT[key] for key in df["Type (R, H, V, K, E)"]],
