@@ -7,10 +7,10 @@ import os
 from PIL import Image, ImageFont, ImageDraw
 from create_diagrams import *
 
-ADDRESS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 54)
+ADDRESS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 42)
 DATE_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)
 CONTACT_1_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)
-CONTACT_2_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 24)
+CONTACT_2_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 20)
 MEASUREMENTS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 20)
 AREA_FONT = ImageFont.truetype("fonts/Lucida Grande Bold.ttf", 24)
 LENGTHS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 24)
@@ -105,7 +105,7 @@ class ReportWriter:
 
             draw.text((350, 1186), self.company, (0,0,0), font=CONTACT_2_FONT)
 
-            draw.text((350, 1237), self.contact, (0,0,0), font=CONTACT_2_FONT)
+            draw.text((320, 1237), self.contact, (0,0,0), font=CONTACT_2_FONT)
 
         def fill_key_measurements():
             i = 0
@@ -478,9 +478,9 @@ if __name__ == "__main__":
 
     writer = ReportWriter(
         args.folder,
-        "ADDRESS",
-        "COMPANY",
-        "CONTACT",
+        "6692 Kingsley Drive, Loveland, OH, USA",
+        "Bernecker Brothers Roofing Inc.",
+        "zach@bbr1949.com",
         measurements
     )
 

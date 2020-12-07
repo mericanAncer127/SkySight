@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
+import pickle
 from shapely.ops import polygonize, linemerge
 
 def get_letter_id(num):
@@ -107,12 +108,17 @@ def create_face_graphic(lines, folder, fontsize=8):
 
     polygons = list(polygonize(line_segments))
 
+    points = []
     plt.savefig(os.path.join(folder, "blank"))
     for i, polygon in enumerate(polygons):
+
         point = polygon.representative_point()
+        points.append([point.x, point.y])
 
         t = plt.text(point.x, point.y, get_letter_id(i+1), c='k', weight="bold", fontsize=fontsize)
         # t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
+
+    np.save(os.path.join(folder, "polygon_points.npy"), points)
 
     plt.savefig(os.path.join(folder, "faces"), dpi=400)
     plt.show()

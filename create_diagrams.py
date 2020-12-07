@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
+import pickle
 from shapely.ops import polygonize, linemerge
 
 COLOR_DICT = {
@@ -109,6 +110,8 @@ def create_face_diagrams(lines, areas, pitches, folder, fontsize=8):
 
     polygons = list(polygonize(line_segments))
 
+    polygon_points = np.load(os.path.join(folder, "polygon_points.npy"))
+
     for data, diagram_name in zip([areas, pitches], ["Area", "Pitch"]):
         fig, ax = plt.subplots()
         ax.set_aspect("equal")
@@ -121,10 +124,13 @@ def create_face_diagrams(lines, areas, pitches, folder, fontsize=8):
                 [_line[0][1],_line[1][1]],
                 c='k', alpha=0.4)
 
-        for i, polygon in enumerate(polygons):
-            point = polygon.representative_point()
+        for i, polygon in enumerate(polygon_points):
+            if pd.isnull(data[i]):
+                break
+
+            point = polygon_points[i]
             
-            t = plt.text(point.x, point.y, int(data[i]), c='k', weight="bold", fontsize=fontsize)
+            t = plt.text(point[0], point[1], int(data[i]), c='k', weight="bold", fontsize=fontsize)
             # t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
 
         plt.savefig(os.path.join(folder, diagram_name), dpi=400)
