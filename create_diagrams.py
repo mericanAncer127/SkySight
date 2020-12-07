@@ -1,4 +1,5 @@
 import argparse
+from collections import defaultdict
 import ezdxf
 from glob import glob
 import matplotlib.pyplot as plt
@@ -134,38 +135,58 @@ def create_face_diagrams(lines, areas, pitches, folder, fontsize=8):
 def get_data(folder):
     df = pd.read_csv(glob(folder + "/*.csv")[0])
 
-    try:
-        print("Lengths:")
-        for key in ["R","H","V","K","E"]:
-            print("{} length: {}".format(key, sum(df.loc[df["Type (R, H, V, K, E)"] == key]["Length (ft.)"])))
-    except:
-        pass
+    def make_maps():
+        roof_line_map = defaultdict(int)
+        pitch_area_map = defaultdict(int)
 
-    try:
-        print("\nTotal Area: {}".format(sum(df["Area (ft.^2)"].fillna(0))))
-    except:
-        pass
+        for i, row in df.iterrows():
+            if not pd.isnull(row["Length (ft.)"]):
+                roof_line_map[row["Type (R, H, V, K, E)"]] += \
+                    row["Length (ft.)"]
+            
+            if not pd.isnull(row["Area (ft.^2)"]):
+                pitch_area_map[row["Pitch"]] += \
+                    row["Area (ft.^2)"]
+
+        return (
+            roof_line_map,
+            pitch_area_map,
+            df["Area (ft.^2)"].count()
+            )
+
+    # try:
+    #     print("Lengths:")
+    #     for key in ["R","H","V","K","E"]:
+    #         print("{} length: {}".format(key, sum(df.loc[df["Type (R, H, V, K, E)"] == key]["Length (ft.)"])))
+    # except:
+    #     pass
+
+    # try:
+    #     print("\nTotal Area: {}".format(sum(df["Area (ft.^2)"].fillna(0))))
+    # except:
+    #     pass
 
     return (
         [COLOR_DICT[key] for key in df["Type (R, H, V, K, E)"]],
         list(df["Length (ft.)"]),
         list(df["Area (ft.^2)"]),
-        list(df["Pitch (0-12)"])
+        list(df["Pitch"]),
+        make_maps()
         )
 
-def main(folder, fontsize):
+def create_diagrams(folder, fontsize):
     drawing = ezdxf.readfile(glob(folder+"/*.dxf")[0])
     msp = drawing.modelspace()
 
     lines = msp.query("LINE")
 
-    colors, lengths, areas, pitches = get_data(folder)
+    colors, lengths, areas, pitches, maps = get_data(folder)
 
     create_length_diagram(lines, lengths, colors, folder, fontsize)
 
     create_face_diagrams(lines, areas, pitches, folder, fontsize)
 
-    return
+    return maps
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -174,4 +195,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    main(args.folder, args.fontsize)
+    create_diagrams(args.folder, args.fontsize)

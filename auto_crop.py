@@ -8,7 +8,7 @@ def auto_crop(folder):
     """
     Crop all images in folder to min width/height of images
     """
-    imgs = [Image.open(img) for img in glob.glob(folder+"/*.png")]
+    imgs = [Image.open(img) for img in glob.glob(folder+"/ims/*.png")]
     imgs = {
         "North": Image.open(folder+"/north.png"),
         "East": Image.open(folder+"/east.png"),

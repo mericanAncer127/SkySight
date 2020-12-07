@@ -126,14 +126,14 @@ def create_data_sheet(line_count, face_count, folder):
 
     max_length = max(line_count, face_count)
 
-    df = pd.DataFrame(columns=["Line Label", "Type (R, H, V, K, E)", "Length (ft.)", "Face Label", "Area (ft.^2)", "Pitch (0-12)"])
+    df = pd.DataFrame(columns=["Line Label", "Type (R, H, V, K, E)", "Length (ft.)", "Face Label", "Area (ft.^2)", "Pitch"])
     
     df["Line Label"] = line_labels + [''] * (max_length - line_count)
     df["Type (R, H, V, K, E)"] = ['-'] * len(line_labels) + [''] * (max_length - line_count)
     df["Length (ft.)"] = ['-'] * len(line_labels) + [''] * (max_length - line_count)
     df["Face Label"] = face_labels + [''] * (max_length - face_count)
     df["Area (ft.^2)"] = ['-'] * len(face_labels) + [''] * (max_length - face_count)
-    df["Pitch (0-12)"] = ['-'] * len(face_labels) + [''] * (max_length - face_count)
+    df["Pitch"] = ['-'] * len(face_labels) + [''] * (max_length - face_count)
 
     df.to_csv(os.path.join(folder, "data_sheet.csv"), index=False)
 
