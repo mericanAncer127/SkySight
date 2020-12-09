@@ -89,42 +89,72 @@ def create_length_graphic(lines, folder, fontsize=8):
     plt.close()
     return
 
-def create_face_graphic(lines, folder, fontsize=8):
+def create_face_graphic(lines, folder, fontsize=8, label=False):
     fig, ax = plt.subplots()
     ax.set_aspect("equal")
     plt.axis('off')
     plt.tight_layout()
 
+    points = []
     _lines = []
+
+    def onclick(event):
+        if event.button == 1:
+            print(event.xdata, event.ydata)
+
+            points.append([event.xdata, event.ydata])
+
+            plt.clf()
+            ax.set_aspect("equal")
+            plt.axis('off')
+            plt.tight_layout()
+
+            plot_lines(_lines)
+            plot_face_labels(points)
+
+            plt.draw()
+            plt.savefig(os.path.join(folder, "faces"), dpi=400)
+            np.save(os.path.join(folder, "polygon_points.npy"), points)
+
+        return
+
+    def plot_lines(lines):
+        for line in lines:
+            plt.plot([line[0][0], line[1][0]],
+                [line[0][1], line[1][1]], c='k', alpha=0.4)
+        return
+    
+    def plot_face_labels(points):
+        print(len(points))
+        for i, point in enumerate(points):
+            t = plt.text(point[0], point[1], get_letter_id(i+1), c='k', weight="bold", fontsize=fontsize)
+        return
+
     for i, line in enumerate(lines):
         x_1, y_1, *_ = line.dxf.start
         x_2, y_2, *_ = line.dxf.end
 
         _lines.append(((x_1,y_1),(x_2,y_2)))
 
-        plt.plot([x_1,x_2], [y_1,y_2],c='k',alpha=0.4)
-    
     line_segments = get_line_segments(_lines)
 
     polygons = list(polygonize(line_segments))
 
-    points = []
-    plt.savefig(os.path.join(folder, "blank"))
     for i, polygon in enumerate(polygons):
-
         point = polygon.representative_point()
         points.append([point.x, point.y])
 
-        t = plt.text(point.x, point.y, get_letter_id(i+1), c='k', weight="bold", fontsize=fontsize)
-        # t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
 
+    plot_lines(_lines)
+    plot_face_labels(points)
+    plt.savefig(os.path.join(folder, "faces"), dpi=400)
     np.save(os.path.join(folder, "polygon_points.npy"), points)
 
-    plt.savefig(os.path.join(folder, "faces"), dpi=400)
+    fig.canvas.mpl_connect("button_press_event", onclick)
     plt.show()
-    plt.close()
+    plt.draw()
 
-    return len(polygons)
+    return len(points)
 
 def create_data_sheet(line_count, face_count, folder):
     line_labels = [get_letter_id(n+1) for n in range(line_count)]
@@ -145,7 +175,7 @@ def create_data_sheet(line_count, face_count, folder):
 
     return
 
-def main(folder, fontsize):
+def main(folder, fontsize, label=False):
     """
     Creates graphics and accompanying CSV file for
     measurement labeling.
@@ -164,7 +194,7 @@ def main(folder, fontsize):
 
     create_length_graphic(lines, folder, fontsize)
 
-    face_count = create_face_graphic(lines, folder, fontsize)
+    face_count = create_face_graphic(lines, folder, fontsize, label)
 
     create_data_sheet(len(lines), face_count, folder)
 
@@ -174,7 +204,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--f", dest="folder")
     parser.add_argument("--s", dest="fontsize", type=int)
+    parser.add_argument("-l", dest="label", action="store_true")
 
     args = parser.parse_args()
 
-    main(args.folder, args.fontsize)
+    main(args.folder, args.fontsize, args.label)
