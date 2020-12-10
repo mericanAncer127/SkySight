@@ -28,6 +28,8 @@
 
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://www.paypal.com/sdk/js?client-id=sb" data-csp-nonce="xyz-123"></script>
+
     <style>
         #map {
             position: relative;
@@ -250,6 +252,7 @@
             <h1 class="m-3">Order a SkySight Roof Report<span style="vertical-align: super; font-size: 20px;">&trade;</span></h1>
             <p class="lead">Your payment will be authorized, but not processed until your Roof Report<span style="vertical-align: super; font-size: 16px;">&trade;</span> is complete</p>
             <p class="lead my-4">Please email <strong>skysightdata@gmail.com</strong> with any questions or concerns</p>
+            <h2 class="my-4">If you are experiencing issues ordering your report, please email us for support</h2>
             <form id="mail_form">
                 <div class="row">
                     <div class="col-md-6 form-group">
@@ -285,21 +288,6 @@
                 </div>
             </form>
         </div>
-        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content" style="text-align: center;">
-                    <div class="modal-header text-center">
-                        <h5 class="col-12 modal-title text-center" id="exampleModalLabel">Thank you for using SkySight!</h5>
-                    </div>
-                    <div class="modal-body">
-                        <p>We are reviewing your order and will email your Roof Report shortly</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </section>
 
     <section class="section p-0" id="Pay">
@@ -310,8 +298,6 @@
                     <div id="paypal-button-container"></div>
                 </div>
             </div>
-            <script src="https://www.paypal.com/sdk/js?client-id=AVxzdYTReY12Py8W5y_1yGnjNI0DgNYFokLHlwKpbCLirXkzpLctr-jWczwKJ2dskC6PFNdZ6HRahZEu&currency=USD&intent=authorize" data-sdk-integration-source="button-factory"></script>
-
             <!-- The core Firebase JS SDK is always required and must be listed first -->
             <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-app.js"></script>
 
@@ -339,13 +325,13 @@
                 firebase.initializeApp(firebaseConfig);
                 firebase.analytics();
             </script>
-
+            <script src="https://www.paypal.com/sdk/js?client-id=AVxzdYTReY12Py8W5y_1yGnjNI0DgNYFokLHlwKpbCLirXkzpLctr-jWczwKJ2dskC6PFNdZ6HRahZEu&currency=USD" data-sdk-integration-source="button-factory"></script>
             <script>
                 function initPayPalButton() {
                     paypal.Buttons({
                         style: {
                             shape: 'rect',
-                            color: 'blue',
+                            color: 'gold',
                             layout: 'vertical',
                             label: 'paypal',
                         },
@@ -370,13 +356,10 @@
                         },
 
                         onApprove: function(data, actions) {
-                            // Authorize the transaction
                             actions.order.authorize().then(function(authorization) {
 
-                                // Get the authorization id
-                                var authorizationID = authorization.purchase_units[0].payments.authorizations[0].id
+                                var authorizationID = authorization.purchase_units[0].payments.authorizations[0].id;
 
-                                //create a functions to push
                                 function firebasePush(input) {
                                     //push itself
                                     var mailsRef = firebase.database().ref('orders').push().set({
@@ -400,12 +383,10 @@
                                     "orderID": data.orderID,
                                     "authID": authorizationID
                                 });
+
+                                $('#mail_form')[0].reset();
+                                alert('Payment authorized. We are reviewing your order and will email your Roof Report shortly. Thank you for using SkySight!');
                             });
-
-                            // Show modal if everything went well
-                            $('#exampleModal').modal('show');
-
-                            $('#mail_form')[0].reset();
                         },
 
                         onError: function(err) {
