@@ -21,7 +21,7 @@ h6 {
 header.masthead {
     position: relative;
     background-color: #343a40;
-    background: url(../img/header.png) no-repeat center center;
+    background: url(https://skysight.s3.us-east-2.amazonaws.com/header.png) no-repeat center center;
     background-size: cover;
     padding-top: 8rem;
     padding-bottom: 8rem
