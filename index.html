@@ -38,7 +38,18 @@
             height: 100vw;
             max-height: 600px;
         }
+        
+        #map2 {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            height: 100vw;
+            max-height: 600px;
+        }
     </style>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.css" type="text/css" />
 </head>
 
 <body>
@@ -280,6 +291,10 @@
                         <input type="address" id="address" class="form-control form-control-lg" required></input>
                     </div>
                 </div>
+                <div class="col-12 py-5">
+                    <p class="lead">First, enter an address. Then drag the marker on top of the property you'd like the report for</p>
+                    <div class="mx-auto" id="map2"></div>
+                </div>
                 <div class="row d-flex justify-content-center">
                     <div class="col-md-7 form-group">
                         <label for="messsage">Additional Information</label>
@@ -370,9 +385,14 @@
                                         location: input.location,
                                         message: input.message,
                                         orderID: input.orderID,
-                                        authID: input.authID
+                                        authID: input.authID,
+                                        roof_coords: input.roof_coords
                                     });
                                 }
+
+                                // Get marker lat/lng
+                                var roof_coords = marker._lngLat.lng.toString() + "_" + marker._lngLat.lat.toString();
+
                                 firebasePush({
                                     "fname": window.fname,
                                     "lname": window.lname,
@@ -381,7 +401,8 @@
                                     "location": window.address,
                                     "message": window.message,
                                     "orderID": data.orderID,
-                                    "authID": authorizationID
+                                    "authID": authorizationID,
+                                    "roof_coords": roof_coords
                                 });
 
                                 $('#mail_form')[0].reset();
@@ -453,18 +474,59 @@
             }, 1500);
         })
 
-        function initialize() {
-            var input = document.getElementById('address');
-            new google.maps.places.Autocomplete(input);
+        var geocoder = new google.maps.Geocoder();
+        var marker = null;
 
+        function moveMap2() {
+            var address = document.getElementById("address").value;
+            geocoder.geocode({
+                'address': address
+            }, function(results, status) {
+
+                if (status == "OK") {
+                    var lat = results[0].geometry.location.lat();
+                    var lng = results[0].geometry.location.lng();
+
+                    map2.flyTo({
+                        center: [lng, lat],
+                        zoom: 18,
+                        speed: 1.5
+                    });
+
+                    if (marker) {
+                        marker.remove();
+                    }
+
+                    marker = new mapboxgl.Marker({
+                            draggable: true
+                        })
+                        .setLngLat([lng, lat])
+                        .addTo(map2);
+                }
+            });
+        }
+
+        function initialize() {
             var coverage = document.getElementById('coverage');
-            new google.maps.places.Autocomplete(coverage);
+            var coverage_search = new google.maps.places.Autocomplete(coverage);
+
+            var input = document.getElementById('address');
+            var address_search = new google.maps.places.Autocomplete(input);
+            address_search.addListener('place_changed', moveMap2);
         }
 
         google.maps.event.addDomListener(window, 'load', initialize);
-    </script>
-    <script>
+
+
         mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjanVlbGRxbTUwNGVlNDlwcXRxNnFhYnlzIn0.-dc9uxSNW4TUYbC96E8zjA';
+
+        var map2 = new mapboxgl.Map({
+            container: 'map2', // container id
+            style: 'mapbox://styles/mapbox/satellite-v9', //hosted style id
+            center: [-91.874, 42.76], // starting position
+            zoom: 12 // starting zoom
+        });
+
         var map = new mapboxgl.Map({
             container: 'map', // container id
             style: 'mapbox://styles/secfast/ckihy9e2616ma19oahkhz4nmf',
@@ -472,11 +534,7 @@
             zoom: 6 // starting zoom
         });
 
-        var geocoder = new google.maps.Geocoder();
-
         var form = document.getElementById("coverage_form");
-
-        var marker = null;
 
         function checkCoverage(event) {
             event.preventDefault();
@@ -540,6 +598,8 @@
                                     $('html, body').animate({
                                         scrollTop: $("#Order").offset().top - 10
                                     }, 1500);
+
+                                    moveMap2();
                                 })
                             } else {
                                 let p = document.createElement("p");

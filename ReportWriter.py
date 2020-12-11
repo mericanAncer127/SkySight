@@ -282,15 +282,11 @@ class ReportWriter:
         page = self.add_header_to_img(page)
 
         def create_view_img():
-            imgs = glob(self.folder+"/ims/*.png")
-            imgs.sort(key=os.path.getmtime)
-            imgs = [Image.open(img) for img in imgs]
-
             imgs = {
-                "North": imgs[3],
-                "East": imgs[2],
-                "South": imgs[0],
-                "West": imgs[1]
+                "North": Image.open(self.folder+"/ims/north.png"),
+                "East": Image.open(self.folder+"/ims/east.png"),
+                "South": Image.open(self.folder+"/ims/south.png"),
+                "West": Image.open(self.folder+"/ims/west.png")
             }
 
             min_w, min_h = float("inf"), float("inf")
@@ -459,10 +455,11 @@ class ReportWriter:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--f", dest="folder")
+    parser.add_argument("--s", dest="size")
 
     args = parser.parse_args()
 
-    roof_line_map, pitch_area_map, face_count = process_datasheet(args.folder)
+    roof_line_map, pitch_area_map, face_count = process_datasheet(args.folder, args.size)
 
     measurements = [
         sum(pitch_area_map.values()),
@@ -478,9 +475,9 @@ if __name__ == "__main__":
 
     writer = ReportWriter(
         args.folder,
-        "2136 N Water View Ct, Tucson, AZ 85749",
-        "Levellineroofers",
-        "levellineroofers@gmail.com",
+        "1555 N Canyon Rd, Provo, UT 84604, USA",
+        "Provo Roofer",
+        "StephensonPatrickLee@gmail.com",
         measurements
     )
 
