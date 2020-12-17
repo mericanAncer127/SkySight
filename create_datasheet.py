@@ -68,11 +68,15 @@ def get_line_segments(lines):
 
     return segments
 
-def create_length_graphic(lines, folder, fontsize=8):
+def create_length_graphic(lines, arcs, folder, fontsize=8):
     fig, ax = plt.subplots()
     ax.set_aspect("equal")
     plt.axis('off')
     plt.tight_layout()
+
+    linewidth = 2
+    if fontsize and int(fontsize) < 5:
+        linewidth = 1
 
     for i, line in enumerate(lines):
         x_1, y_1, *_ = line.dxf.start
@@ -80,16 +84,33 @@ def create_length_graphic(lines, folder, fontsize=8):
 
         midpoint = get_midpoint((x_1, y_1), (x_2, y_2))
 
-        plt.plot([x_1,x_2], [y_1,y_2],c='k',alpha=0.4)
+        plt.plot([x_1,x_2], [y_1,y_2],c='k',alpha=0.4,linewidth=linewidth)
         t = plt.text(midpoint[0], midpoint[1], get_letter_id(i+1), c='k', weight="bold", fontsize=fontsize)
         # t.set_bbox(dict(facecolor='red', alpha=0.75, edgecolor='red'))
-    
+
+    for i, arc in enumerate(arcs):
+        _arc = arc.dxf
+        center, radius = _arc.center, _arc.radius
+
+        start_angle, end_angle = _arc.start_angle, _arc.end_angle
+
+        arc_line = []
+        for angle in np.linspace(start_angle, end_angle, 100):
+            arc_point = (center.x + np.cos(np.radians(angle)) * radius, center.y + np.sin(np.radians(angle)) * radius)
+
+            arc_line.append(arc_point)
+
+        arc_line = np.array(arc_line)
+
+        plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4,linewidth=linewidth)
+        t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i+1), c='k', weight="bold", fontsize=fontsize)
+
     plt.savefig(os.path.join(folder, "lengths"), dpi=400)
     plt.show()
     plt.close()
     return
 
-def create_face_graphic(lines, folder, fontsize=8, label=False):
+def create_face_graphic(lines, arcs, folder, fontsize=8, label=False):
     fig, ax = plt.subplots()
     ax.set_aspect("equal")
     plt.axis('off')
@@ -111,6 +132,7 @@ def create_face_graphic(lines, folder, fontsize=8, label=False):
 
             plot_lines(_lines)
             plot_face_labels(points)
+            plot_arcs(arcs)
 
             plt.draw()
             plt.savefig(os.path.join(folder, "faces"), dpi=400)
@@ -123,11 +145,30 @@ def create_face_graphic(lines, folder, fontsize=8, label=False):
             plt.plot([line[0][0], line[1][0]],
                 [line[0][1], line[1][1]], c='k', alpha=0.4)
         return
-    
+
     def plot_face_labels(points):
-        print(len(points))
         for i, point in enumerate(points):
             t = plt.text(point[0], point[1], get_letter_id(i+1), c='k', weight="bold", fontsize=fontsize)
+        return
+
+    def plot_arcs(arcs):
+        for i, arc in enumerate(arcs):
+            _arc = arc.dxf
+            center, radius = _arc.center, _arc.radius
+
+            start_angle, end_angle = _arc.start_angle, _arc.end_angle
+
+            arc_line = []
+            for angle in np.linspace(start_angle, end_angle, 100):
+                arc_point = (center.x + np.cos(np.radians(angle)) * radius, center.y + np.sin(np.radians(angle)) * radius)
+
+                arc_line.append(arc_point)
+
+
+            arc_line = np.array(arc_line)
+
+            plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4)
+
         return
 
     for i, line in enumerate(lines):
@@ -135,6 +176,28 @@ def create_face_graphic(lines, folder, fontsize=8, label=False):
         x_2, y_2, *_ = line.dxf.end
 
         _lines.append(((x_1,y_1),(x_2,y_2)))
+
+    for i, arc in enumerate(arcs):
+        _arc = arc.dxf
+        center, radius = _arc.center, _arc.radius
+
+        start_angle, end_angle = _arc.start_angle, _arc.end_angle
+
+        arc_line = []
+        for angle in np.linspace(start_angle, end_angle, 100):
+            arc_point = (center.x + np.cos(np.radians(angle)) * radius, center.y + np.sin(np.radians(angle)) * radius)
+
+            arc_line.append(arc_point)
+
+
+        _arc_lines = [(arc_line[k], arc_line[k+1]) for k in range(len(arc_line) - 1)]
+
+        arc_line = np.array(arc_line)
+
+
+        plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4)
+
+        _lines += _arc_lines
 
     line_segments = get_line_segments(_lines)
 
@@ -163,7 +226,7 @@ def create_data_sheet(line_count, face_count, folder):
     max_length = max(line_count, face_count)
 
     df = pd.DataFrame(columns=["Line Label", "Type (R, H, V, K, E)", "Length (ft.)", "Face Label", "Area (ft.^2)", "Pitch"])
-    
+
     df["Line Label"] = line_labels + [''] * (max_length - line_count)
     df["Type (R, H, V, K, E)"] = ['-'] * len(line_labels) + [''] * (max_length - line_count)
     df["Length (ft.)"] = ['-'] * len(line_labels) + [''] * (max_length - line_count)
@@ -183,7 +246,7 @@ def main(folder, fontsize, label=False):
     Two graphics are generated:
         1. Roof lines graphic
         2. Roof faces graphic
-    
+
     The line graphic is used for length measurements. The
     faces graphic is used for area and pitch measurements.
     """
@@ -191,10 +254,11 @@ def main(folder, fontsize, label=False):
     msp = drawing.modelspace()
 
     lines = msp.query("LINE")
+    arcs = msp.query("ARC")
 
-    create_length_graphic(lines, folder, fontsize)
+    create_length_graphic(lines, arcs, folder, fontsize)
 
-    face_count = create_face_graphic(lines, folder, fontsize, label)
+    face_count = create_face_graphic(lines, arcs, folder, fontsize, label)
 
     create_data_sheet(len(lines), face_count, folder)
 

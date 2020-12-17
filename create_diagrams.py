@@ -77,11 +77,15 @@ def get_line_segments(lines):
 
     return segments
 
-def create_length_diagram(lines, lengths, colors, folder, fontsize=8):
+def create_length_diagram(lines, arcs, lengths, colors, folder, fontsize=8):
     fig, ax = plt.subplots()
     ax.set_aspect("equal")
     plt.axis('off')
     plt.tight_layout()
+
+    linewidth = 2
+    if fontsize and int(fontsize) < 5:
+        linewidth = 1
 
     for i, line in enumerate(lines):
         x_1, y_1, *_ = line.dxf.start
@@ -89,15 +93,33 @@ def create_length_diagram(lines, lengths, colors, folder, fontsize=8):
 
         midpoint = get_midpoint((x_1, y_1), (x_2, y_2))
 
-        plt.plot([x_1,x_2], [y_1,y_2], c=colors[i], alpha=0.5)
+        plt.plot([x_1,x_2], [y_1,y_2], c=colors[i], alpha=0.5, linewidth=linewidth)
         t = plt.text(midpoint[0], midpoint[1], lengths[i], c='k', weight="bold", fontsize=fontsize)
         # t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
-    
+
+    for i, arc in enumerate(arcs):
+        _arc = arc.dxf
+        center, radius = _arc.center, _arc.radius
+
+        start_angle, end_angle = _arc.start_angle, _arc.end_angle
+
+        arc_line = []
+        for angle in np.linspace(start_angle, end_angle, 100):
+            arc_point = (center.x + np.cos(np.radians(angle)) * radius, center.y + np.sin(np.radians(angle)) * radius)
+
+            arc_line.append(arc_point)
+
+        arc_line = np.array(arc_line)
+
+        plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4, linewidth=linewidth)
+        t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i+1), c='k', weight="bold", fontsize=fontsize)
+
+
     plt.savefig(os.path.join(folder, "Length"), dpi=400)
     plt.close()
     return
 
-def create_face_diagrams(lines, areas, pitches, folder, fontsize=8):
+def create_face_diagrams(lines, arcs, areas, pitches, folder, fontsize=8):
 
     _lines = []
     for i, line in enumerate(lines):
@@ -124,12 +146,28 @@ def create_face_diagrams(lines, areas, pitches, folder, fontsize=8):
                 [_line[0][1],_line[1][1]],
                 c='k', alpha=0.4)
 
+        for i, arc in enumerate(arcs):
+            _arc = arc.dxf
+            center, radius = _arc.center, _arc.radius
+
+            start_angle, end_angle = _arc.start_angle, _arc.end_angle
+
+            arc_line = []
+            for angle in np.linspace(start_angle, end_angle, 100):
+                arc_point = (center.x + np.cos(np.radians(angle)) * radius, center.y + np.sin(np.radians(angle)) * radius)
+
+                arc_line.append(arc_point)
+
+            arc_line = np.array(arc_line)
+
+            plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4)
+
         for i, polygon in enumerate(polygon_points):
             if pd.isnull(data[i]):
                 break
 
             point = polygon_points[i]
-            
+
             t = plt.text(point[0], point[1], int(data[i]), c='k', weight="bold", fontsize=fontsize)
             # t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
 
@@ -149,7 +187,7 @@ def get_data(folder):
             if not pd.isnull(row["Length (ft.)"]):
                 roof_line_map[row["Type (R, H, V, K, E)"]] += \
                     row["Length (ft.)"]
-            
+
             if not pd.isnull(row["Area (ft.^2)"]):
                 pitch_area_map[row["Pitch"]] += \
                     row["Area (ft.^2)"]
@@ -185,12 +223,13 @@ def create_diagrams(folder, fontsize):
     msp = drawing.modelspace()
 
     lines = msp.query("LINE")
+    arcs = msp.query("ARC")
 
     colors, lengths, areas, pitches, maps = get_data(folder)
 
-    create_length_diagram(lines, lengths, colors, folder, fontsize)
+    create_length_diagram(lines, arcs, lengths, colors, folder, fontsize)
 
-    create_face_diagrams(lines, areas, pitches, folder, fontsize)
+    create_face_diagrams(lines, arcs, areas, pitches, folder, fontsize)
 
     return maps
 
