@@ -45,6 +45,7 @@ def get_fit_image(img, bbox):
     img_aspect_ratio = img.size[0] / img.size[1]
 
     if img_aspect_ratio > bbox_aspect_ratio:
+
         img_w = bbox_w
         img_h = int(bbox_w / img_aspect_ratio)
 
@@ -52,7 +53,7 @@ def get_fit_image(img, bbox):
     
     else:
         img_h = bbox_h
-        img_w = int(bbox_w * img_aspect_ratio)
+        img_w = int(bbox_h * img_aspect_ratio)
 
         pos = (bbox[0] + int(bbox_w / 2 - img_w / 2), bbox[2])
 
@@ -475,10 +476,14 @@ if __name__ == "__main__":
 
     writer = ReportWriter(
         args.folder,
-        "30 Linden Ave, Merchantville, NJ, USA",
-        "Gasper Roofing LLC",
-        "gasperroofing@gmail.com",
+        "2919 Island View Dr NE Salem OR 97303",
+        "Terry Slate",
+        "terry@roofsbyslate.com",
         measurements
     )
 
     writer.create_report()
+
+
+
+

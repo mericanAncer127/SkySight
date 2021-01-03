@@ -207,7 +207,6 @@ def create_face_graphic(lines, arcs, folder, fontsize=8, label=False):
         point = polygon.representative_point()
         points.append([point.x, point.y])
 
-
     plot_lines(_lines)
     plot_face_labels(points)
     plt.savefig(os.path.join(folder, "faces"), dpi=400)
