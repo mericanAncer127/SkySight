@@ -6,8 +6,10 @@ import numpy as np
 import os
 import pandas as pd
 from tqdm import tqdm
+from shapely import geometry
 from shapely.ops import polygonize
 
+EPSILON = 1e-15
 
 def get_letter_id(num):
     """
@@ -20,9 +22,6 @@ def get_letter_id(num):
         s = chr(65 + remainder) + s
     return s
 
-def unit_vector(vector):
-    return vector / np.linalg.norm(vector)
-
 def distance(p1, p2):
     return np.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
@@ -30,16 +29,32 @@ class Roof:
     def __init__(
         self,
         folder,
-        fontsize
+        fontsize=8
     ):
         self.folder = folder
         self.fontsize = fontsize
         self.lines = self.get_all_lines()
         self.line_segments = self.get_line_segments()
+
         _line_segments = [
             ((l.x1, l.y1), (l.x2, l.y2)) for l in self.line_segments
         ]
         self.facets = list(polygonize(_line_segments))
+        self.facet_segment_ids = dict((get_letter_id(i), []) for i in range(len(self.facets)))
+        self.facet_segment_lengths = dict((get_letter_id(i), []) for i in range(len(self.facets)))
+
+        for i, facet in enumerate(self.facets):
+            facet_id = get_letter_id(i)
+            for segment in self.line_segments:
+                is_in_facet = True
+                for point in [(segment.x1, segment.y1), (segment.x2, segment.y2)]:
+                    if not geometry.Point(*point).distance(facet) < EPSILON:
+                        is_in_facet = False
+                        break
+
+                if is_in_facet:
+                    self.facet_segment_ids[facet_id].append(segment.id)
+                    self.facet_segment_lengths[facet_id].append(segment.drawing_length)
 
     def get_line_by_id(self, _id):
         return list(filter(lambda line: line.id == _id, self.lines))[0]
@@ -54,6 +69,14 @@ class Roof:
 
         lines_query = msp.query("LINE")
         arcs_query = msp.query("ARC")
+        
+        polylines_query = msp.query("LWPOLYLINE")
+        lw_lines_queries = []
+        lw_arcs_queries = []
+        for polyline in polylines_query:
+            res = polyline.explode()
+            lw_lines_queries.append(res.query("LINE"))
+            lw_arcs_queries.append(res.query("ARC"))
 
         lines = []
         line_count = 0
@@ -72,6 +95,23 @@ class Roof:
                 )
             )
             line_count += 1
+        
+        for lw_lines_query in lw_lines_queries:
+            for line_query in lw_lines_query:
+                line = line_query.dxf
+                line_start = line.start
+                line_end = line.end
+
+                lines.append(
+                    Line(
+                        line_start[0],
+                        line_end[0],
+                        line_start[1],
+                        line_end[1],
+                        _id=get_letter_id(line_count)
+                    )
+                )
+                line_count += 1
 
         for arc_query in arcs_query:
             arc = arc_query.dxf
@@ -88,6 +128,23 @@ class Roof:
                 )
             )
             line_count += 1
+
+        for lw_arcs_query in lw_arcs_queries:
+            for arc_query in lw_arcs_query:
+                arc = arc_query.dxf
+                center, radius = arc.center, arc.radius
+                start_angle, end_angle = arc.start_angle, arc.end_angle
+
+                lines.append(
+                    Line(
+                        center=center,
+                        radius=radius,
+                        start_angle=start_angle,
+                        end_angle=end_angle,
+                        _id=get_letter_id(line_count)
+                    )
+                )
+                line_count += 1
 
         return lines
 
@@ -162,12 +219,12 @@ class Roof:
                 arc_line = np.array(arc_line)
 
                 plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4,linewidth=linewidth)
-                t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i+1), c='k', weight="bold", fontsize=self.fontsize)
+                t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i), c='k', weight="bold", fontsize=self.fontsize)
             else:
                 midpoint = line.get_midpoint()
 
                 plt.plot([line.x1, line.x2], [line.y1, line.y2],c='k',alpha=0.4,linewidth=linewidth)
-                t = plt.text(midpoint[0], midpoint[1], get_letter_id(i+1), c='k', weight="bold", fontsize=self.fontsize)
+                t = plt.text(midpoint[0], midpoint[1], get_letter_id(i), c='k', weight="bold", fontsize=self.fontsize)
 
         plt.savefig(os.path.join(self.folder, "lengths"), dpi=400)
         plt.show()
@@ -247,9 +304,9 @@ class Line:
 
     def get_drawing_length(self):
         if self.is_arc():
-           return 2 * self.radius * np.pi * (self.end_angle - self.start_angle) / 360
+            return 2 * self.radius * np.pi * (self.end_angle - self.start_angle) / 360
         else:
-           return distance((self.x1,self.y1),(self.x2,self.y2))
+            return distance((self.x1,self.y1),(self.x2,self.y2))
 
     def set_real_length(self, length):
         self.real_length = length
@@ -287,6 +344,9 @@ class Line:
     def intersections_to_segments(self, intersections):
         segments = []
 
+        intersections = sorted(intersections,
+            key=lambda point: distance(point, (self.x1, self.y1)))
+
         points = [(self.x1, self.y1)] + \
             intersections + \
             [(self.x2, self.y2)]
@@ -303,6 +363,20 @@ class Line:
             )
 
         return segments
+    
+    def get_slope(self):
+        if self.x2 == self.x1:
+            self.x1 += EPSILON
+
+        return (self.y2 - self.y1) / (self.x2 - self.x1)
+
+
+    def angle(self, line):
+
+        s1 = self.get_slope()
+        s2 = line.get_slope()
+
+        return abs(np.degrees(np.arctan((s2 - s1) / (EPSILON + 1 + (s2 * s1)))))
 
 
 if __name__ == "__main__":

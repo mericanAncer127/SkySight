@@ -22,6 +22,7 @@ def get_letter_id(num):
     Get Excel-like column letter from index num
     """
     s = ""
+    num += 1
     while num > 0:
         num, remainder = divmod(num - 1, 26)
         s = chr(65 + remainder) + s
@@ -112,7 +113,7 @@ def create_length_diagram(lines, arcs, lengths, colors, folder, fontsize=8):
         arc_line = np.array(arc_line)
 
         plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4, linewidth=linewidth)
-        t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i+1), c='k', weight="bold", fontsize=fontsize)
+        t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i), c='k', weight="bold", fontsize=fontsize)
 
 
     plt.savefig(os.path.join(folder, "Length"), dpi=400)
@@ -132,7 +133,11 @@ def create_face_diagrams(lines, arcs, areas, pitches, folder, fontsize=8):
 
     polygons = list(polygonize(line_segments))
 
-    polygon_points = np.load(os.path.join(folder, "polygon_points.npy"))
+    # polygon_points = np.load(os.path.join(folder, "polygon_points.npy"))
+    polygon_points = [
+        p.representative_point() for p in polygons
+    ]
+
 
     for data, diagram_name in zip([areas, pitches], ["Area", "Pitch"]):
         fig, ax = plt.subplots()
@@ -168,7 +173,8 @@ def create_face_diagrams(lines, arcs, areas, pitches, folder, fontsize=8):
 
             point = polygon_points[i]
 
-            t = plt.text(point[0], point[1], int(data[i]), c='k', weight="bold", fontsize=fontsize)
+            # t = plt.text(point[0], point[1], int(data[i]), c='k', weight="bold", fontsize=fontsize)
+            t = plt.text(point.x, point.y, int(data[i]), c='k', weight="bold", fontsize=fontsize)
             # t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
 
         plt.savefig(os.path.join(folder, diagram_name), dpi=400)
@@ -176,8 +182,8 @@ def create_face_diagrams(lines, arcs, areas, pitches, folder, fontsize=8):
 
     return
 
-def get_data(folder):
-    df = pd.read_csv(glob(folder + "/*.csv")[0])
+def get_data(folder, datasheet="data_sheet.csv"):
+    df = pd.read_csv(os.path.join(folder, datasheet))
 
     def make_maps():
         roof_line_map = defaultdict(int)
@@ -218,14 +224,14 @@ def get_data(folder):
         make_maps()
         )
 
-def create_diagrams(folder, fontsize):
+def create_diagrams(folder, fontsize, datasheet="data_sheet.csv"):
     drawing = ezdxf.readfile(glob(folder+"/*.dxf")[0])
     msp = drawing.modelspace()
 
     lines = msp.query("LINE")
     arcs = msp.query("ARC")
 
-    colors, lengths, areas, pitches, maps = get_data(folder)
+    colors, lengths, areas, pitches, maps = get_data(folder, datasheet=datasheet)
 
     create_length_diagram(lines, arcs, lengths, colors, folder, fontsize)
 

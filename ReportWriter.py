@@ -7,6 +7,11 @@ import os
 from PIL import Image, ImageFont, ImageDraw
 from create_diagrams import *
 
+
+ADDRESS = "280 Wallrock Drive, Ocoee, FL, USA"
+COMPANY = "AGU Roofing"
+CONTACT = "david@agu-roofing.com"
+
 ADDRESS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 42)
 DATE_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)
 CONTACT_1_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)
@@ -26,8 +31,8 @@ WASTE_PERCENTAGES = [
     1.22
 ]
 
-def process_datasheet(folder, fontsize=8):
-    return create_diagrams(folder, fontsize)
+def process_datasheet(folder, fontsize=8, datasheet="data_sheet.csv"):
+    return create_diagrams(folder, fontsize, datasheet=datasheet)
 
 def draw_underlined_text(draw, pos, text, font, color, **options):
     twidth, _ = draw.textsize(text, font=font)
@@ -50,7 +55,7 @@ def get_fit_image(img, bbox):
         img_h = int(bbox_w / img_aspect_ratio)
 
         pos = (bbox[0], bbox[2] + int(bbox_h / 2 - img_h / 2))
-    
+
     else:
         img_h = bbox_h
         img_w = int(bbox_h * img_aspect_ratio)
@@ -104,7 +109,7 @@ class ReportWriter:
             draw_underlined_text(draw, (180, 1230), "Contact:",
                                 CONTACT_1_FONT, (0,0,0))
 
-            draw.text((350, 1186), self.company, (0,0,0), font=CONTACT_2_FONT)
+            draw.text((350, 1188), self.company, (0,0,0), font=CONTACT_2_FONT)
 
             draw.text((320, 1237), self.contact, (0,0,0), font=CONTACT_2_FONT)
 
@@ -132,7 +137,7 @@ class ReportWriter:
                     y_pos += 31
                 else:
                     y_pos += 32
-        
+
         def add_image():
             box_left = 200
             box_right = 650
@@ -186,7 +191,7 @@ class ReportWriter:
         draw.text((995, 370),
                   '{0:,.0f}'.format(self.measurements[0]) + " sq. ft.",
                   (0,0,0), font=AREA_FONT)
-        
+
         def add_image():
             box_left = 160
             box_right = 1110
@@ -234,7 +239,7 @@ class ReportWriter:
                     y_pos += 39
                 else:
                     y_pos += 40
-        
+
         def add_image():
             box_left = 160
             box_right = 1110
@@ -311,7 +316,7 @@ class ReportWriter:
                 final_imgs[key] = new
 
                 # new.save(os.path.join(folder, str(i) + ".png"))
-            
+
             fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
             ax1.imshow(final_imgs["North"])
             ax1.set_title("North Side")
@@ -346,7 +351,7 @@ class ReportWriter:
             page.paste(img, pos)
 
             return
-            
+
         create_view_img()
         add_image()
 
@@ -387,7 +392,7 @@ class ReportWriter:
                 draw.text((x_pos - SUMMARY_FONT.getsize(pitch_text)[0] / 2, 469), pitch_text, (0,0,0), font=SUMMARY_FONT)
                 draw.text((x_pos - SUMMARY_FONT.getsize(area_text)[0] / 2, 500), area_text, (0,0,0), font=SUMMARY_FONT)
                 draw.text((x_pos - SUMMARY_FONT.getsize(percent_text)[0] / 2, 531), percent_text, (0,0,0), font=SUMMARY_FONT)
-            
+
             return
 
         def fill_waste_table():
@@ -412,7 +417,7 @@ class ReportWriter:
                 x_pos += spacing
 
             return
-        
+
         def fill_length_table():
             x_pos = 408
             y_pos = 1040
@@ -476,9 +481,9 @@ if __name__ == "__main__":
 
     writer = ReportWriter(
         args.folder,
-        "2919 Island View Dr NE Salem OR 97303",
-        "Terry Slate",
-        "terry@roofsbyslate.com",
+        ADDRESS,
+        COMPANY,
+        CONTACT,
         measurements
     )
 

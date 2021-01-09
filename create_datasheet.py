@@ -255,6 +255,12 @@ def main(folder, fontsize, label=False):
     lines = msp.query("LINE")
     arcs = msp.query("ARC")
 
+    # poly_lines = msp.query("LWPOLYLINE")
+    # for poly_line in poly_lines:
+    #     print(dir(poly_line.dxf))
+    #     print(poly_line.dxf.dxfattribs)
+    # a
+
     create_length_graphic(lines, arcs, folder, fontsize)
 
     face_count = create_face_graphic(lines, arcs, folder, fontsize, label)
