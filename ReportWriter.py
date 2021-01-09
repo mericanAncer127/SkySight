@@ -6,11 +6,12 @@ import numpy as np
 import os
 from PIL import Image, ImageFont, ImageDraw
 from create_diagrams import *
+from sketch_to_sheet import *
 
 
-ADDRESS = "280 Wallrock Drive, Ocoee, FL, USA"
-COMPANY = "AGU Roofing"
-CONTACT = "david@agu-roofing.com"
+ADDRESS = "111 Lexington Avenue, Merchantville, NJ, USA"
+COMPANY = "Gasper Roofing LLC"
+CONTACT = "clymersam@gmail.com"
 
 ADDRESS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 42)
 DATE_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)
@@ -31,8 +32,8 @@ WASTE_PERCENTAGES = [
     1.22
 ]
 
-def process_datasheet(folder, fontsize=8, datasheet="data_sheet.csv"):
-    return create_diagrams(folder, fontsize, datasheet=datasheet)
+def process_datasheet(roof, fontsize=8, datasheet="data_sheet.csv"):
+    return create_diagrams(roof, fontsize, datasheet=datasheet)
 
 def draw_underlined_text(draw, pos, text, font, color, **options):
     twidth, _ = draw.textsize(text, font=font)
@@ -461,11 +462,13 @@ class ReportWriter:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--f", dest="folder")
-    parser.add_argument("--s", dest="size")
+    parser.add_argument("--s", dest="size", default=8)
 
     args = parser.parse_args()
 
-    roof_line_map, pitch_area_map, face_count = process_datasheet(args.folder, args.size)
+    roof = Roof(args.folder, args.size)
+
+    roof_line_map, pitch_area_map, face_count = process_datasheet(roof, args.size)
 
     measurements = [
         sum(pitch_area_map.values()),

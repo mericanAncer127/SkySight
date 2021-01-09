@@ -197,7 +197,7 @@ class Roof:
         df.to_csv(os.path.join(self.folder, "data_sheet.csv"), index=False)
         return
 
-    def create_line_graphic(self):
+    def create_diagram(self):
         fig, ax = plt.subplots()
         ax.set_aspect("equal")
         plt.axis('off')
@@ -219,32 +219,24 @@ class Roof:
                 arc_line = np.array(arc_line)
 
                 plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4,linewidth=linewidth)
-                t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i), c='k', weight="bold", fontsize=self.fontsize)
+                t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i), c='k', weight="bold", fontsize=self.fontsize, ha="center")
             else:
                 midpoint = line.get_midpoint()
 
                 plt.plot([line.x1, line.x2], [line.y1, line.y2],c='k',alpha=0.4,linewidth=linewidth)
-                t = plt.text(midpoint[0], midpoint[1], get_letter_id(i), c='k', weight="bold", fontsize=self.fontsize)
-
-        plt.savefig(os.path.join(self.folder, "lengths"), dpi=400)
-        plt.show()
-        plt.close()
-        return
-
-    def create_facet_graphic(self):
-        fig, ax = plt.subplots()
-        ax.set_aspect("equal")
-        plt.axis('off')
-        plt.tight_layout()
+                t = plt.text(midpoint[0], midpoint[1], get_letter_id(i), c='k', weight="bold", fontsize=self.fontsize, ha="center")
 
         for i, facet in enumerate(self.facets):
-            plt.plot(*facet.exterior.xy, 'k')
-            center = facet.representative_point()
-            plt.text(center.x, center.y, get_letter_id(i), c='k', weight="bold", fontsize=self.fontsize)
+            center = facet.centoid
+            if not facet.contains(center):
+                center = facet.representative_point()
 
-        plt.savefig(os.path.join(self.folder, "faces"), dpi=400)
+            plt.text(center.x, center.y, get_letter_id(i), c='r', weight="bold", fontsize=self.fontsize, ha="center")
+
+        plt.savefig(os.path.join(self.folder, "diagram"), dpi=400)
         plt.show()
         plt.close()
+
         return
 
 class Facet:
@@ -376,7 +368,11 @@ class Line:
         s1 = self.get_slope()
         s2 = line.get_slope()
 
-        return abs(np.degrees(np.arctan((s2 - s1) / (EPSILON + 1 + (s2 * s1)))))
+        div = 1 + (s2 * s1)
+        while div == 0:
+            div += EPSILON
+
+        return abs(np.degrees(np.arctan((s2 - s1) / div)))
 
 
 if __name__ == "__main__":
@@ -391,7 +387,5 @@ if __name__ == "__main__":
 
     roof.create_datasheet()
 
-    roof.create_line_graphic()
-
-    roof.create_facet_graphic()
+    roof.create_diagram()
 
