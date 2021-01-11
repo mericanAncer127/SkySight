@@ -36,7 +36,14 @@ Twitter - https://twitter.com/SkySightData
 
 dt = datetime.datetime.now()
 
-BODY = BODY.replace("TIMEOFDAY", {True: "morning", False: "afternoon"}[dt.hour < 12])
+if dt.hour < 12:
+  tod = "morning"
+elif dt.hour < 18:
+  tod = "afternoon"
+else:
+  tod = "evening"
+
+BODY = BODY.replace("TIMEOFDAY", tod)
 BODY = BODY.replace("ADDRESS", ADDRESS)
 
 

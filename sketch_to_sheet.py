@@ -25,6 +25,13 @@ def get_letter_id(num):
 def distance(p1, p2):
     return np.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
+def get_line_type(line, df):
+    for i, row in df.iterrows():
+        if row["Line Label"] == line.id:
+            return row["Type (R, H, V, K, E)"]
+
+    return None
+
 class Roof:
     def __init__(
         self,
@@ -55,6 +62,16 @@ class Roof:
                 if is_in_facet:
                     self.facet_segment_ids[facet_id].append(segment.id)
                     self.facet_segment_lengths[facet_id].append(segment.drawing_length)
+
+    def get_facet_angle(self, facet_id, df):
+        facet_angles = []
+
+        for i, line_id in enumerate(self.facet_segment_ids[facet_id]):
+            line = self.get_line_by_id(line_id)
+            if get_line_type(line, df) in ["E", "R"]:
+                facet_angles.append((self.facet_segment_lengths[facet_id][i], line.x_angle(), line.id))
+
+        return list(sorted(facet_angles, key=lambda item: item[0]))[-1][1]
 
     def get_line_by_id(self, _id):
         return list(filter(lambda line: line.id == _id, self.lines))[0]
@@ -218,20 +235,20 @@ class Roof:
 
                 arc_line = np.array(arc_line)
 
-                plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4,linewidth=linewidth)
-                t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i), c='k', weight="bold", fontsize=self.fontsize, ha="center")
+                plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.3, linewidth=linewidth)
+                t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i), bbox=dict(boxstyle='square,pad=0.0', fc='white', ec='none'), c='k', weight="bold", fontsize=self.fontsize, ha="center", va="center")
             else:
                 midpoint = line.get_midpoint()
 
-                plt.plot([line.x1, line.x2], [line.y1, line.y2],c='k',alpha=0.4,linewidth=linewidth)
-                t = plt.text(midpoint[0], midpoint[1], get_letter_id(i), c='k', weight="bold", fontsize=self.fontsize, ha="center")
+                plt.plot([line.x1, line.x2], [line.y1, line.y2],c='k',alpha=0.3,linewidth=linewidth)
+                t = plt.text(midpoint[0], midpoint[1], get_letter_id(i), bbox=dict(boxstyle='square,pad=0.0', fc='white', ec='none'), c='k', weight="bold", fontsize=self.fontsize, ha="center", va="center", rotation=line.x_angle())
 
         for i, facet in enumerate(self.facets):
-            center = facet.centoid
+            center = facet.centroid
             if not facet.contains(center):
                 center = facet.representative_point()
 
-            plt.text(center.x, center.y, get_letter_id(i), c='r', weight="bold", fontsize=self.fontsize, ha="center")
+            plt.text(center.x, center.y, get_letter_id(i), bbox=dict(boxstyle='square,pad=0.0', fc='white', ec='none'), c='r', weight="bold", fontsize=self.fontsize, ha="center", va="center")
 
         plt.savefig(os.path.join(self.folder, "diagram"), dpi=400)
         plt.show()
@@ -373,6 +390,22 @@ class Line:
             div += EPSILON
 
         return abs(np.degrees(np.arctan((s2 - s1) / div)))
+    
+    def x_angle(self):
+        if self.x2 > self.x1:
+            div = self.x2 - self.x1
+            while div == 0:
+                div += EPSILON
+
+            angle = np.degrees(np.arctan((self.y2 - self.y1) / div))
+        else:
+            div = self.x1 - self.x2
+            while div == 0:
+                div += EPSILON
+
+            angle = np.degrees(np.arctan((self.y1 - self.y2) / div))
+
+        return angle
 
 
 if __name__ == "__main__":

@@ -163,12 +163,18 @@ def main(roof, manual=False):
             
             scale_factor = get_average_scale_factor(get_letter_id(i), roof, df)
 
+            facet_label = get_facet_label(row["Line Label"], roof)
+
+            pitch = get_facet_pitch(facet_label, df)
+
             roof_angle = np.cos(np.arctan(pitch / 12))
 
-            if roof_angle == 0:
+            while roof_angle == 0:
                 roof_angle += EPSILON
 
-            area = int((roof.facets[i].area / roof_angle) / scale_factor**2)
+            drawing_area = roof.facets[i].area
+
+            area = int((drawing_area / roof_angle) / scale_factor**2)
 
             if area % 2 != 0:
                 area += 1

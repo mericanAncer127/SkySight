@@ -9,6 +9,9 @@ import pandas as pd
 import pickle
 from shapely.ops import polygonize, linemerge
 
+
+EPSILON = 1e-15
+
 COLOR_DICT = {
     "R": "red",
     "H": "orange",
@@ -78,7 +81,7 @@ def get_line_segments(lines):
 
     return segments
 
-def create_length_diagram(lines, arcs, lengths, colors, folder, fontsize=8):
+def create_length_diagram(roof, lengths, colors, folder, fontsize=8):
     fig, ax = plt.subplots()
     ax.set_aspect("equal")
     plt.axis('off')
@@ -88,39 +91,20 @@ def create_length_diagram(lines, arcs, lengths, colors, folder, fontsize=8):
     if fontsize and int(fontsize) < 5:
         linewidth = 1
 
-    for i, line in enumerate(lines):
-        x_1, y_1, *_ = line.dxf.start
-        x_2, y_2, *_ = line.dxf.end
+    for i, line in enumerate(roof.lines):
 
-        midpoint = get_midpoint((x_1, y_1), (x_2, y_2))
+        midpoint = line.get_midpoint()
 
-        plt.plot([x_1,x_2], [y_1,y_2], c=colors[i], alpha=0.5, linewidth=linewidth)
-        t = plt.text(midpoint[0], midpoint[1], int(lengths[i]), c='k', weight="bold", fontsize=fontsize, ha="center")
-        # t.set_bbox(dict(facecolor='white', alpha=0.75, edgecolor='black'))
-
-    for i, arc in enumerate(arcs):
-        _arc = arc.dxf
-        center, radius = _arc.center, _arc.radius
-
-        start_angle, end_angle = _arc.start_angle, _arc.end_angle
-
-        arc_line = []
-        for angle in np.linspace(start_angle, end_angle, 100):
-            arc_point = (center.x + np.cos(np.radians(angle)) * radius, center.y + np.sin(np.radians(angle)) * radius)
-
-            arc_line.append(arc_point)
-
-        arc_line = np.array(arc_line)
-
-        plt.plot(arc_line[:,0], arc_line[:,1], c='k', alpha=0.4, linewidth=linewidth)
-        t = plt.text(arc_line[50][0], arc_line[50][1], get_letter_id(len(lines)+i), c='k', weight="bold", fontsize=fontsize, ha="center")
-
+        line_angle = line.x_angle()
+        
+        plt.plot([line.x1, line.x2], [line.y1, line.y2], c=colors[i], alpha=0.7, linewidth=linewidth)
+        t = plt.text(midpoint[0], midpoint[1], int(lengths[i]), bbox=dict(boxstyle='square,pad=0.0', fc='white', ec='none'), c='k', weight="bold", fontsize=fontsize, ha="center", va="center", rotation=line_angle)
 
     plt.savefig(os.path.join(folder, "Length"), dpi=400)
     plt.close()
     return
 
-def create_face_diagrams(polygons, areas, pitches, folder, fontsize=8):
+def create_face_diagrams(roof, areas, pitches, folder, fontsize=8):
 
     # _lines = []
     # for i, line in enumerate(lines):
@@ -135,20 +119,22 @@ def create_face_diagrams(polygons, areas, pitches, folder, fontsize=8):
 
     # polygon_points = np.load(os.path.join(folder, "polygon_points.npy"))
 
+    df = pd.read_csv(os.path.join(folder, "res.csv"))
+
     for data, diagram_name in zip([areas, pitches], ["Area", "Pitch"]):
         fig, ax = plt.subplots()
         ax.set_aspect("equal")
         plt.axis('off')
         plt.tight_layout()
 
-        for i, polygon in enumerate(polygons):
+        for i, polygon in enumerate(roof.facets):
             plt.plot(*polygon.exterior.xy, 'k', alpha=0.4)
 
             point = polygon.centroid
             if not polygon.contains(point):
                 point = polygon.representative_point()
 
-            t = plt.text(point.x, point.y, int(data[i]), c='k', weight="bold", fontsize=fontsize, ha="center")
+            t = plt.text(point.x, point.y, int(data[i]), c='k', weight="bold", fontsize=fontsize, ha="center", va="center", bbox=dict(boxstyle='square,pad=0.0', fc='white', ec='none'), rotation=roof.get_facet_angle(get_letter_id(i), df))
 
         plt.savefig(os.path.join(folder, diagram_name), dpi=400)
         plt.close()
@@ -165,11 +151,11 @@ def get_data(folder, datasheet="data_sheet.csv"):
         for i, row in df.iterrows():
             if not pd.isnull(row["Length (ft.)"]):
                 roof_line_map[row["Type (R, H, V, K, E)"]] += \
-                    row["Length (ft.)"]
+                    int(row["Length (ft.)"])
 
             if not pd.isnull(row["Area (ft.^2)"]):
                 pitch_area_map[row["Pitch"]] += \
-                    row["Area (ft.^2)"]
+                    int(row["Area (ft.^2)"])
 
         return (
             roof_line_map,
@@ -198,17 +184,12 @@ def get_data(folder, datasheet="data_sheet.csv"):
         )
 
 def create_diagrams(roof, fontsize, datasheet="data_sheet.csv"):
-    drawing = ezdxf.readfile(glob(roof.folder+"/*.dxf")[0])
-    msp = drawing.modelspace()
-
-    lines = msp.query("LINE")
-    arcs = msp.query("ARC")
 
     colors, lengths, areas, pitches, maps = get_data(roof.folder, datasheet=datasheet)
 
-    create_length_diagram(lines, arcs, lengths, colors, roof.folder, fontsize)
+    create_length_diagram(roof, lengths, colors, roof.folder, fontsize)
 
-    create_face_diagrams(roof.facets, areas, pitches, roof.folder, fontsize)
+    create_face_diagrams(roof, areas, pitches, roof.folder, fontsize)
 
     return maps
 
