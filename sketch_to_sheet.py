@@ -28,7 +28,7 @@ def distance(p1, p2):
 def get_line_type(line, df):
     for i, row in df.iterrows():
         if row["Line Label"] == line.id:
-            return row["Type (R, H, V, K, E)"]
+            return row["Type (R, H, V, K, E)"].upper()
 
     return None
 
@@ -63,15 +63,47 @@ class Roof:
                     self.facet_segment_ids[facet_id].append(segment.id)
                     self.facet_segment_lengths[facet_id].append(segment.drawing_length)
 
-    def get_facet_angle(self, facet_id, df):
-        facet_angles = []
+    def get_facet_angle(self, facet_id, df, pitch_adj=False):
+        lng_eave, lng_ridge = None, None
+        facet = self.get_facet(facet_id)
 
         for i, line_id in enumerate(self.facet_segment_ids[facet_id]):
             line = self.get_line_by_id(line_id)
-            if get_line_type(line, df) in ["E", "R"]:
-                facet_angles.append((self.facet_segment_lengths[facet_id][i], line.x_angle(), line.id))
+            line_type = get_line_type(line, df)
+            line_length = self.facet_segment_lengths[facet_id][i]
 
-        return list(sorted(facet_angles, key=lambda item: item[0]))[-1][1]
+            if line_type == "E":
+                if not lng_eave or (lng_eave and line_length > lng_eave[1]):
+                    lng_eave = (line.x_angle(), line_length, line)
+            elif line_type == "R":
+                if not lng_ridge or (lng_ridge and line_length > lng_ridge[1]):
+                    lng_ridge = (line.x_angle(), line_length, line)
+
+        if lng_eave:
+            if pitch_adj:
+                if facet.centroid.y > lng_eave[2].get_midpoint()[1]:
+                    return lng_eave[0]
+                else:
+                    return lng_eave[0] - 180
+            else:
+                return lng_eave[0]
+
+        elif lng_ridge:
+            if pitch_adj:
+                if facet.centroid.y < lng_ridge[2].get_midpoint()[1]:
+                    return lng_ridge[0]
+                else:
+                    return lng_ridge[0] - 180
+            else:
+                return lng_ridge[0]
+
+        return 0
+
+    def get_facet(self, _id):
+        for i, facet in enumerate(self.facets):
+            if get_letter_id(i) == _id:
+                return facet
+        return None
 
     def get_line_by_id(self, _id):
         return list(filter(lambda line: line.id == _id, self.lines))[0]
@@ -86,7 +118,7 @@ class Roof:
 
         lines_query = msp.query("LINE")
         arcs_query = msp.query("ARC")
-        
+
         polylines_query = msp.query("LWPOLYLINE")
         lw_lines_queries = []
         lw_arcs_queries = []
@@ -112,7 +144,7 @@ class Roof:
                 )
             )
             line_count += 1
-        
+
         for lw_lines_query in lw_lines_queries:
             for line_query in lw_lines_query:
                 line = line_query.dxf
@@ -256,14 +288,6 @@ class Roof:
 
         return
 
-class Facet:
-    def __init__(
-        self,
-        points
-    ):
-        self.points = points
-        self.point_set = frozenset(points)
-
 class Line:
     def __init__(
         self,
@@ -317,12 +341,6 @@ class Line:
         else:
             return distance((self.x1,self.y1),(self.x2,self.y2))
 
-    def set_real_length(self, length):
-        self.real_length = length
-
-    def set_line_type(self, line_type):
-        self.line_type = line_type
-
     def get_real_length(self, line):
         """
         Use the real length and drawing length
@@ -372,7 +390,7 @@ class Line:
             )
 
         return segments
-    
+
     def get_slope(self):
         if self.x2 == self.x1:
             self.x1 += EPSILON
@@ -390,7 +408,7 @@ class Line:
             div += EPSILON
 
         return abs(np.degrees(np.arctan((s2 - s1) / div)))
-    
+
     def x_angle(self):
         if self.x2 > self.x1:
             div = self.x2 - self.x1

@@ -96,7 +96,7 @@ def create_length_diagram(roof, lengths, colors, folder, fontsize=8):
         midpoint = line.get_midpoint()
 
         line_angle = line.x_angle()
-        
+
         plt.plot([line.x1, line.x2], [line.y1, line.y2], c=colors[i], alpha=0.7, linewidth=linewidth)
         t = plt.text(midpoint[0], midpoint[1], int(lengths[i]), bbox=dict(boxstyle='square,pad=0.0', fc='white', ec='none'), c='k', weight="bold", fontsize=fontsize, ha="center", va="center", rotation=line_angle)
 
@@ -105,20 +105,6 @@ def create_length_diagram(roof, lengths, colors, folder, fontsize=8):
     return
 
 def create_face_diagrams(roof, areas, pitches, folder, fontsize=8):
-
-    # _lines = []
-    # for i, line in enumerate(lines):
-    #     x_1, y_1, *_ = line.dxf.start
-    #     x_2, y_2, *_ = line.dxf.end
-
-    #     _lines.append(((x_1,y_1),(x_2,y_2)))
-
-    # line_segments = get_line_segments(_lines)
-
-    # polygons = list(polygonize(line_segments))
-
-    # polygon_points = np.load(os.path.join(folder, "polygon_points.npy"))
-
     df = pd.read_csv(os.path.join(folder, "res.csv"))
 
     for data, diagram_name in zip([areas, pitches], ["Area", "Pitch"]):
@@ -134,7 +120,7 @@ def create_face_diagrams(roof, areas, pitches, folder, fontsize=8):
             if not polygon.contains(point):
                 point = polygon.representative_point()
 
-            t = plt.text(point.x, point.y, int(data[i]), c='k', weight="bold", fontsize=fontsize, ha="center", va="center", bbox=dict(boxstyle='square,pad=0.0', fc='white', ec='none'), rotation=roof.get_facet_angle(get_letter_id(i), df))
+            t = plt.text(point.x, point.y, int(data[i]), c='k', weight="bold", fontsize=fontsize, ha="center", va="center", bbox=dict(boxstyle='square,pad=0.0', fc='white', ec='none'))
 
         plt.savefig(os.path.join(folder, diagram_name), dpi=400)
         plt.close()
@@ -150,7 +136,7 @@ def get_data(folder, datasheet="data_sheet.csv"):
 
         for i, row in df.iterrows():
             if not pd.isnull(row["Length (ft.)"]):
-                roof_line_map[row["Type (R, H, V, K, E)"]] += \
+                roof_line_map[row["Type (R, H, V, K, E)"].upper()] += \
                     int(row["Length (ft.)"])
 
             if not pd.isnull(row["Area (ft.^2)"]):
@@ -163,20 +149,8 @@ def get_data(folder, datasheet="data_sheet.csv"):
             df["Area (ft.^2)"].count()
             )
 
-    # try:
-    #     print("Lengths:")
-    #     for key in ["R","H","V","K","E"]:
-    #         print("{} length: {}".format(key, sum(df.loc[df["Type (R, H, V, K, E)"] == key]["Length (ft.)"])))
-    # except:
-    #     pass
-
-    # try:
-    #     print("\nTotal Area: {}".format(sum(df["Area (ft.^2)"].fillna(0))))
-    # except:
-    #     pass
-
     return (
-        [COLOR_DICT[key] for key in df["Type (R, H, V, K, E)"]],
+        [COLOR_DICT[key.upper()] for key in df["Type (R, H, V, K, E)"]],
         list(df["Length (ft.)"]),
         list(df["Area (ft.^2)"]),
         list(df["Pitch"]),
