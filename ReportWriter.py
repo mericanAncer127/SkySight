@@ -9,9 +9,9 @@ from create_diagrams import *
 from sketch_to_sheet import *
 
 
-ADDRESS = "113 Rodeo Drive, Manvel, TX, USA"
-COMPANY = "NY2ENTERPRISES"
-CONTACT = "jj@ny2enterprises.com"
+ADDRESS = "532 Inverness Dr SE Salem"
+COMPANY = "Ten Square Roofing LLC"
+CONTACT = "chris@tensquareroofing.com"
 
 ADDRESS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 42)
 DATE_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)

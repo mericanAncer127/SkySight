@@ -2,19 +2,20 @@ from sklearn.linear_model import LinearRegression
 from ReportWriter import *
 from sketch_to_sheet import *
 
-def get_facet_label(line_label, roof):
-    for key, value in roof.facet_segment_ids.items():
-        if line_label in value:
-            return key
-
-    return None
-
 def get_facet_pitch(facet_label, df):
     for i, row in df.iterrows():
         if row["Face Label"] == facet_label:
             return row["Pitch"]
 
     return None
+
+def get_facet_label(line_label, roof, df):
+    labels = []
+    for key, value in roof.facet_segment_ids.items():
+        if line_label in value:
+            labels.append(key)
+
+    return sorted(labels, key=lambda label: get_facet_pitch(label, df))[-1]
 
 def get_line_type(line, df):
     for i, row in df.iterrows():
@@ -23,7 +24,7 @@ def get_line_type(line, df):
 
     return None
 
-def get_neighboring_flat_line(line, roof, df):
+def get_neighboring_flat_line(line, roof, df, face_label=None):
     ref_lines = []
     for key, value in roof.facet_segment_ids.items():
         if line.id in value:
@@ -31,7 +32,11 @@ def get_neighboring_flat_line(line, roof, df):
                 ref_line = roof.get_line_by_id(label)
 
                 if get_line_type(ref_line, df) in ["E", "R"]:
-                    ref_lines.append(ref_line)
+                    if face_label:
+                        if ref_line.id in roof.facet_segment_ids[face_label]:
+                            ref_lines.append(ref_line)
+                    else:
+                        ref_lines.append(ref_line)
 
     return sorted(ref_lines, key=lambda ref_line: line.angle(ref_line))[-1]
 
@@ -61,7 +66,7 @@ def get_average_scale_factor(facet_id, roof, df):
             drawing_length = line.drawing_length
         else:
             pitch = get_facet_pitch(facet_id, df)
-            ref_line = get_neighboring_flat_line(line, roof, df)
+            ref_line = get_neighboring_flat_line(line, roof, df, face_label=facet_id)
             angle = line.angle(ref_line)
             drawing_length = get_line_3d_length(line, pitch, angle)
 
@@ -102,6 +107,23 @@ def create_report(roof, fontsize):
     writer.create_report()
     return
 
+def get_closest_data_point(x, X, Y):
+    min_dist = float("inf")
+    closest = (None, None)
+    for _x, _y in zip(X, Y):
+        dist = abs(x - _x)
+        if dist < min_dist:
+            min_dist = dist
+            closest = (_x, _y)
+
+    return closest
+
+def predict(x, _x, _y, m):
+    if x > _x:
+        return _y + (x - _x) * m
+    else:
+        return _y - (_x - x) * m
+
 def main(roof, manual=False):
 
     if not manual:
@@ -122,23 +144,14 @@ def main(roof, manual=False):
                     X.append(line.drawing_length)
                     Y.append(float(row["Length (ft.)"]))
 
-                    ref_line = get_neighboring_flat_line(line, roof, df)
-                    angle = line.angle(ref_line)
-
-                    print(line.id, line.drawing_length)
-                    print("\n")
-
                 else: # Hips, Valleys, Rakes
                     # Find which facet this line is part of, adjust for pitch,
                     # then adjust for angle between an Eave/Ridge on facet
 
-                    facet_label = get_facet_label(row["Line Label"], roof)
+                    facet_label = get_facet_label(row["Line Label"], roof, df)
                     pitch = get_facet_pitch(facet_label, df)
-                    ref_line = get_neighboring_flat_line(line, roof, df)
+                    ref_line = get_neighboring_flat_line(line, roof, df, face_label=facet_label)
                     angle = line.angle(ref_line)
-
-                    print(line.id, get_line_3d_length(line, pitch, angle))
-                    print("\n")
 
                     X.append(get_line_3d_length(line, pitch, angle))
                     Y.append(float(row["Length (ft.)"]))
@@ -146,21 +159,20 @@ def main(roof, manual=False):
         X, Y = np.array(X).reshape(-1, 1), np.array(Y).reshape(-1, 1)
         reg = LinearRegression(fit_intercept=False).fit(X, Y)
 
+        reg_slope = reg.coef_[0][0]
+
         for i, row in df.iterrows():
             if row["Length (ft.)"] == "-":
                 line = roof.get_line_by_id(row["Line Label"])
 
                 if row["Type (R, H, V, K, E)"].upper() in ["R", "E"]:
-                    x = np.array([line.drawing_length]).reshape(1, -1)
+                    x = line.drawing_length
 
-                    ref_line = get_neighboring_flat_line(line, roof, df)
-                    angle = line.angle(ref_line)
+                    _x, _y = get_closest_data_point(x, X.ravel(), Y.ravel())
 
-                    print(line.id, line.drawing_length)
-                    print("\n")
+                    pred = predict(x, _x, _y, reg_slope)
 
-                    pred = int(reg.predict(x)[0][0])
-                    if pred == 0:
+                    if pred <= 0:
                         pred = 1
 
                     df.iat[i, 2] = pred
@@ -169,28 +181,29 @@ def main(roof, manual=False):
                     # Find which facet this line is part of, adjust for pitch,
                     # then adjust for angle between an Eave/Ridge on facet
 
-                    facet_label = get_facet_label(row["Line Label"], roof)
+                    facet_label = get_facet_label(row["Line Label"], roof, df)
                     pitch = get_facet_pitch(facet_label, df)
-                    ref_line = get_neighboring_flat_line(line, roof, df)
+                    ref_line = get_neighboring_flat_line(line, roof, df, face_label=facet_label)
                     angle = line.angle(ref_line)
 
-                    print(line.id, get_line_3d_length(line, pitch, angle))
-                    print("\n")
-                    x = np.array([get_line_3d_length(line, pitch, angle)]).reshape(1, -1)
+                    x = get_line_3d_length(line, pitch, angle)
 
-                    pred = int(reg.predict(x)[0][0])
+                    _x, _y = get_closest_data_point(x, X.ravel(), Y.ravel())
+
+                    pred = predict(x, _x, _y, reg_slope)
+
                     if pred == 0:
                         pred = 1
 
                     df.iat[i, 2] = pred
 
+        scale_factor = np.median([get_average_scale_factor(get_letter_id(i), roof, df) for i in range(len(roof.facets))])
+
         for i, row in df.iterrows():
             if i >= len(roof.facets):
                 break
 
-            scale_factor = get_average_scale_factor(get_letter_id(i), roof, df)
-
-            facet_label = get_facet_label(row["Line Label"], roof)
+            facet_label = get_facet_label(row["Line Label"], roof, df)
 
             pitch = get_facet_pitch(facet_label, df)
 
@@ -198,7 +211,7 @@ def main(roof, manual=False):
 
             drawing_area = roof.facets[i].area
 
-            area = int((drawing_area / np.cos(roof_angle)) / scale_factor**2)
+            area = 1.13 * int((drawing_area / np.cos(roof_angle)) / scale_factor**2)
 
             if area % 2 != 0:
                 area += 1
