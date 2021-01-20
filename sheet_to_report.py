@@ -119,10 +119,7 @@ def get_closest_data_point(x, X, Y):
     return closest
 
 def predict(x, _x, _y, m):
-    if x > _x:
-        return _y + (x - _x) * m
-    else:
-        return _y - (_x - x) * m
+    return _y + (x - _x) * m
 
 def main(roof, manual=False):
 
@@ -192,7 +189,7 @@ def main(roof, manual=False):
 
                     pred = predict(x, _x, _y, reg_slope)
 
-                    if pred == 0:
+                    if pred <= 0:
                         pred = 1
 
                     df.iat[i, 2] = pred
