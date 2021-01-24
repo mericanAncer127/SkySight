@@ -39,7 +39,7 @@ class Roof:
             self.df = pd.read_csv(df_file)
 
             self.line_type_map = pd.Series(
-                self.df["Type"].values,
+                [val.upper() for val in self.df["Type"].values],
                 index=self.df["Line Label"]
             ).to_dict()
 
@@ -155,7 +155,7 @@ class Roof:
             line_segments[line_id] = self.intersections_to_line_segments(
                 line, intersections[line_id]
             )
-        
+
         return line_segments
 
     def get_facets(self):
@@ -239,7 +239,7 @@ class Roof:
         longest = 0
 
         for line_id in self.facet_line_id_map[facet_id]:
-            if self.line_type_map[line_id].upper() in ["E", "R"]:
+            if self.line_type_map[line_id] in ["E", "R"]:
                 ref_line = self.lines[line_id]
                 sketch_length = distance(*ref_line)
 
@@ -266,7 +266,7 @@ class Roof:
     def get_3D_sketch_length(self, line_id):
         line = self.lines[line_id]
 
-        if self.line_type_map[line_id].upper() in ["E", "R"]:
+        if self.line_type_map[line_id] in ["E", "R"]:
             return distance(*line)
 
         ignore = set()
@@ -279,18 +279,18 @@ class Roof:
 
             angle = angle_between(line, ref_line)
 
-            slope = np.arctan(self.facet_pitch_map[facet_id] / 12)
+            slope = np.arctan2(self.facet_pitch_map[facet_id], 12)
 
-            ground_angle = slope * np.sin(angle)
+            ground_angle = np.cos(slope * np.sin(angle))
 
             ignore.add(facet_id)
-        
+
         return distance(*line) / ground_angle
 
     def get_average_scale_factor(self):
         scale_factors = []
         for line_id, sketch_length_3D in self.line_3D_length_map.items():
-            if self.line_type_map[line_id].upper() in ["E", "R"]:
+            if self.line_type_map[line_id] in ["E", "R"]:
                 scale_factors.append(
                     sketch_length_3D / self.line_length_map[line_id]
                 )
@@ -352,7 +352,7 @@ class Roof:
             plt.plot(
                 [line[0][0], line[1][0]],
                 [line[0][1], line[1][1]],
-                LINE_TYPE_COLOR_MAP[self.line_type_map[line_id].upper()],
+                LINE_TYPE_COLOR_MAP[self.line_type_map[line_id]],
                 alpha=0.7
             )
 
@@ -455,11 +455,11 @@ class Roof:
 
         roof_line_map = defaultdict(int)
         for line_id, length in self.line_length_map.items():
-            roof_line_map[self.line_type_map[line_id].upper()] += int(length)
+            roof_line_map[self.line_type_map[line_id]] += int(length)
 
         pitch_area_map = defaultdict(int)
         for facet_id, area in self.facet_area_map.items():
-            pitch_area_map[self.facet_pitch_map[facet_id]] += area
+            pitch_area_map[int(self.facet_pitch_map[facet_id])] += area
 
         measurements = [
             sum(self.facet_area_map.values()),
