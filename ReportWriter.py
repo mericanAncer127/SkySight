@@ -5,13 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from PIL import Image, ImageFont, ImageDraw
-from create_diagrams import *
-from sketch_to_sheet import *
 
 
-ADDRESS = "153 Polly Anna Drive, West Monroe, LA, USA"
-COMPANY = "Frontier Roofing & Construction LLC"
-CONTACT = "daniel@frontierhomex.com"
+ADDRESS = "6711 Paigetree Ln, Pearland, TX, USA"
+COMPANY = "NY2 Enterprises"
+CONTACT = "jj@ny2enterprises.com"
 
 ADDRESS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 42)
 DATE_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)
@@ -31,9 +29,6 @@ WASTE_PERCENTAGES = [
     1.2,
     1.22
 ]
-
-def process_datasheet(roof, fontsize=8, datasheet="data_sheet.csv"):
-    return create_diagrams(roof, fontsize, datasheet=datasheet)
 
 def draw_underlined_text(draw, pos, text, font, color, **options):
     twidth, _ = draw.textsize(text, font=font)
@@ -196,7 +191,7 @@ class ReportWriter:
         def add_image():
             box_left = 160
             box_right = 1110
-            box_top = 385
+            box_top = 425
             box_bottom = 1350
 
             img = Image.open(os.path.join(self.folder, "Area.png"))
@@ -315,8 +310,6 @@ class ReportWriter:
                 ))
 
                 final_imgs[key] = new
-
-                # new.save(os.path.join(folder, str(i) + ".png"))
 
             fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
             ax1.imshow(final_imgs["North"])
@@ -459,38 +452,6 @@ class ReportWriter:
 
         return
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--f", dest="folder")
-    parser.add_argument("--s", dest="size", default=8)
-
-    args = parser.parse_args()
-
-    roof = Roof(args.folder, args.size)
-
-    roof_line_map, pitch_area_map, face_count = process_datasheet(roof, args.size)
-
-    measurements = [
-        sum(pitch_area_map.values()),
-        face_count,
-        '{0:,.0f}'.format(max(pitch_area_map, key=pitch_area_map.get)) + "/12",
-        roof_line_map["R"],
-        roof_line_map["H"],
-        roof_line_map["V"],
-        roof_line_map["K"],
-        roof_line_map["E"],
-        pitch_area_map
-    ]
-
-    writer = ReportWriter(
-        args.folder,
-        ADDRESS,
-        COMPANY,
-        CONTACT,
-        measurements
-    )
-
-    writer.create_report()
 
 
 
