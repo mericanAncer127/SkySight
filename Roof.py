@@ -388,13 +388,19 @@ class Roof:
                 [line[0][0], line[1][0]],
                 [line[0][1], line[1][1]],
                 'k',
-                alpha=0.4
+                alpha=0.6
             )
 
         for facet_id, facet in self.facets.items():
             center = facet.centroid
             if not facet.contains(center):
                 center = facet.representative_point()
+
+            plt.fill(
+                *facet.exterior.xy,
+                'k',
+                alpha=0.1
+            )
 
             plt.text(
                 center.x,
@@ -425,13 +431,19 @@ class Roof:
                 [line[0][0], line[1][0]],
                 [line[0][1], line[1][1]],
                 'k',
-                alpha=0.4
+                alpha=0.6
             )
 
         for facet_id, facet in self.facets.items():
             center = facet.centroid
             if not facet.contains(center):
                 center = facet.representative_point()
+
+            plt.fill(
+                *facet.exterior.xy,
+                'k',
+                alpha=0.1
+            )
 
             plt.text(
                 center.x,
