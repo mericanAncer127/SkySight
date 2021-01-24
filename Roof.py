@@ -1,5 +1,5 @@
 import argparse
-from collections import defaultdict
+from collections import defaultdict, Counter
 import ezdxf
 import glob
 from helper_functions import *
@@ -10,7 +10,7 @@ import os
 import pandas as pd
 from ReportWriter import *
 from shapely.geometry import Point
-from shapely.ops import polygonize
+from shapely.ops import polygonize, polygonize_full
 from sklearn.linear_model import LinearRegression
 
 
@@ -147,7 +147,7 @@ class Roof:
                     d2 = distance(line[1], point)
 
                     if d1 != 0 and d2 != 0 and \
-                        d1 + d2 == distance(line[0], line[1]):
+                        round(d1 + d2,2) == round(distance(line[0], line[1]),2):
 
                         intersections[line_id].append(point)
 
@@ -155,7 +155,7 @@ class Roof:
             line_segments[line_id] = self.intersections_to_line_segments(
                 line, intersections[line_id]
             )
-
+        
         return line_segments
 
     def get_facets(self):
@@ -183,7 +183,7 @@ class Roof:
         return
 
     def create_diagram(self):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10,10))
         ax.set_aspect("equal")
         plt.axis("off")
         plt.tight_layout()
@@ -234,18 +234,34 @@ class Roof:
         plt.show()
         return
 
-    def get_facet_flat_line_id(self, facet_id):
+    def get_facet_flat_line_id(self, facet_id, line):
         ret = None
         longest = 0
 
         for line_id in self.facet_line_id_map[facet_id]:
             if self.line_type_map[line_id].upper() in ["E", "R"]:
-                sketch_length = distance(*self.lines[line_id])
-                if sketch_length > longest:
+                ref_line = self.lines[line_id]
+                sketch_length = distance(*ref_line)
+
+                if sketch_length > longest and angle_between(line, ref_line) > 0.000001:
                     ret = line_id
                     longest = sketch_length
 
         return ret
+
+    def get_facet_id(self, line_id, ignore=[]):
+        line = self.lines[line_id]
+        for facet_id, facet in self.facets.items():
+            if facet_id in ignore:
+                continue
+
+            boundary = facet.boundary
+            p1, p2 = Point(*line[0]), Point(*line[1])
+            if boundary.distance(p1) < EPSILON and \
+                boundary.distance(p2) < EPSILON:
+                return facet_id
+
+        return None
 
     def get_3D_sketch_length(self, line_id):
         line = self.lines[line_id]
@@ -253,25 +269,31 @@ class Roof:
         if self.line_type_map[line_id].upper() in ["E", "R"]:
             return distance(*line)
 
-        for facet_id, line_ids in self.facet_line_id_map.items():
-            if line_id in line_ids:
-                ref_line_id = self.get_facet_flat_line_id(facet_id)
-                ref_line = self.lines[ref_line_id]
+        ignore = set()
+        ground_angle = 0
+        while ground_angle == 0:
+            facet_id = self.get_facet_id(line_id, ignore=ignore)
 
-                angle = angle_between(line, ref_line)
+            ref_line_id = self.get_facet_flat_line_id(facet_id, line)
+            ref_line = self.lines[ref_line_id]
 
-                slope = np.arctan(self.facet_pitch_map[facet_id] / 12)
+            angle = angle_between(line, ref_line)
 
-                ground_angle = slope * np.sin(angle)
+            slope = np.arctan(self.facet_pitch_map[facet_id] / 12)
 
-                return distance(*line) / ground_angle
+            ground_angle = slope * np.sin(angle)
 
-        return None
+            ignore.add(facet_id)
+        
+        return distance(*line) / ground_angle
 
     def get_average_scale_factor(self):
         scale_factors = []
         for line_id, sketch_length_3D in self.line_3D_length_map.items():
-            scale_factors.append(sketch_length_3D / self.line_length_map[line_id])
+            if self.line_type_map[line_id].upper() in ["E", "R"]:
+                scale_factors.append(
+                    sketch_length_3D / self.line_length_map[line_id]
+                )
 
         return np.median(scale_factors)
 
@@ -298,7 +320,11 @@ class Roof:
 
                 _x, _y = closest_sample(x, X, Y)
 
-                self.line_length_map[line_id] = int(predict(x, _x, _y, reg_slope))
+                pred = int(predict(x, _x, _y, reg_slope))
+                if pred <= 0:
+                    pred = 1
+
+                self.line_length_map[line_id] = pred
 
         scale_factor = self.get_average_scale_factor()
 

@@ -7,9 +7,9 @@ import os
 from PIL import Image, ImageFont, ImageDraw
 
 
-ADDRESS = "6711 Paigetree Ln, Pearland, TX, USA"
+ADDRESS = "1911 Sowles Park Drive, Katy, TX, USA"
 COMPANY = "NY2 Enterprises"
-CONTACT = "jj@ny2enterprises.com"
+CONTACT = "frank@ny2enterprises.com"
 
 ADDRESS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 42)
 DATE_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)

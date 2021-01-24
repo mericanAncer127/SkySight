@@ -140,7 +140,7 @@ if __name__ == '__main__':
     parser.add_argument("--f", dest="folder")
     args = parser.parse_args()
 
-    report = os.path.join(args.folder, "report.pdf")
+    report = os.path.join("../reports", args.folder, "report.pdf")
 
 
     logging.basicConfig(

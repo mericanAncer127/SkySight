@@ -4,7 +4,7 @@ import xlsxwriter
 get_letter_id = xlsxwriter.utility.xl_col_to_name
 
 def distance(p1, p2):
-    return round(np.sqrt(sum([(v1-v2)**2 for v1, v2 in zip(p1, p2)])),2)
+    return np.sqrt(sum([(v1-v2)**2 for v1, v2 in zip(p1, p2)]))
 
 def midpoint(line):
     return [(line[0][0] + line[1][0]) / 2, (line[0][1] + line[1][1]) / 2]
@@ -31,7 +31,7 @@ def closest_sample(x, X, Y):
     ret = None
     min_dist = float("inf")
 
-    for _x, _y in zip(X, Y):
+    for _x, _y in zip(X.ravel(), Y):
         dist = abs(x - _x)
         if dist < min_dist:
             ret = (_x, _y)
