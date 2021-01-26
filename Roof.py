@@ -261,6 +261,17 @@ class Roof:
                 boundary.distance(p2) < EPSILON:
                 return facet_id
 
+        for facet_id, facet in self.facets.items():
+            if facet_id in ignore:
+                continue
+
+            boundary = facet.boundary
+            p1, p2 = Point(*line[0]), Point(*line[1])
+
+            if boundary.distance(p1) < EPSILON or \
+                boundary.distance(p2) < EPSILON:
+                return facet_id
+
         return None
 
     def get_3D_sketch_length(self, line_id):
@@ -275,6 +286,10 @@ class Roof:
             facet_id = self.get_facet_id(line_id, ignore=ignore)
 
             ref_line_id = self.get_facet_flat_line_id(facet_id, line)
+
+            if not ref_line_id:
+                return distance(*line)
+
             ref_line = self.lines[ref_line_id]
 
             angle = angle_between(line, ref_line)
@@ -353,7 +368,7 @@ class Roof:
                 [line[0][0], line[1][0]],
                 [line[0][1], line[1][1]],
                 LINE_TYPE_COLOR_MAP[self.line_type_map[line_id]],
-                alpha=0.7
+                alpha=1.0
             )
 
             mp = midpoint(line)
