@@ -1,6 +1,9 @@
+from ReportWriter import *
 from Roof import *
 
-def main(folder, fontsize):
+def main(fontsize):
+
+    folder = "_".join(ADDRESS.split(",")[0].split(" "))
 
     roof = Roof(os.path.join("../reports", folder), fontsize)
 
@@ -16,11 +19,10 @@ def main(folder, fontsize):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--f", dest="folder")
     parser.add_argument("--s", dest="fontsize", default=7)
 
     args = parser.parse_args()
 
-    main(args.folder, args.fontsize)
+    main(args.fontsize)
 
 

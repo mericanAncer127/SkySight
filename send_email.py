@@ -136,12 +136,10 @@ def create_message(sender, to, subject, message_text, files):
   return {'raw': b.decode('utf-8')}
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--f", dest="folder")
-    args = parser.parse_args()
 
-    report = os.path.join("../reports", args.folder, "report.pdf")
+    folder = "_".join(ADDRESS.split(",")[0].split(" "))
 
+    report = os.path.join("../reports", folder, "report.pdf")
 
     logging.basicConfig(
         format="[%(levelname)s] %(message)s",

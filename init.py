@@ -1,10 +1,13 @@
 import argparse
 import os
+from ReportWriter import *
 import subprocess
 
 REPORT_FOLDER_PATH = "../reports"
 
-def init(name):
+def init():
+    name = "_".join(ADDRESS.split(",")[0].split(" "))
+
     folder_name = os.path.join(REPORT_FOLDER_PATH, name)
 
     try:
@@ -16,9 +19,5 @@ def init(name):
     return
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--n", dest="name")
+    init()
 
-    args = parser.parse_args()
-
-    init(args.name)

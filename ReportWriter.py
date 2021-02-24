@@ -7,9 +7,9 @@ import os
 from PIL import Image, ImageFont, ImageDraw
 
 
-ADDRESS = "411 East Ironwood Drive, West Monroe, LA"
-COMPANY = "Frontier Roofing & Construction"
-CONTACT = "daniel@frontierhomex.com"
+ADDRESS = "26 Lorne Road, Turnersville, NJ, USA"
+COMPANY = "DSK Roofing"
+CONTACT = "hathuy563@gmail.com"
 
 ADDRESS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 36)
 DATE_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)
@@ -190,7 +190,7 @@ class ReportWriter:
 
         def add_image():
             box_left = 160
-            box_right = 1110
+            box_right = 1070
             box_top = 425
             box_bottom = 1350
 
@@ -259,7 +259,7 @@ class ReportWriter:
 
         def add_image():
             box_left = 160
-            box_right = 1110
+            box_right = 1070
             box_top = 385
             box_bottom = 1350
 

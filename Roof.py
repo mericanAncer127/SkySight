@@ -363,6 +363,14 @@ class Roof:
         plt.axis("off")
         plt.tight_layout()
 
+
+        for facet in self.facets.values():
+            plt.fill(
+                *facet.exterior.xy,
+                'k',
+                alpha=0.04
+            )
+
         for line_id, line in self.lines.items():
             plt.plot(
                 [line[0][0], line[1][0]],
