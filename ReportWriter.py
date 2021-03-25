@@ -6,10 +6,9 @@ import numpy as np
 import os
 from PIL import Image, ImageFont, ImageDraw
 
-
-ADDRESS = "26 Lorne Road, Turnersville, NJ, USA"
-COMPANY = "DSK Roofing"
-CONTACT = "hathuy563@gmail.com"
+COMPANY = "Gasper Roofing LLC"
+CONTACT = "gasperroofing@gmail.com"
+ADDRESS = "88 Colts Gait Rd, Marlton, NJ, USA"
 
 ADDRESS_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 36)
 DATE_FONT = ImageFont.truetype("fonts/Lucida Grande.ttf", 32)

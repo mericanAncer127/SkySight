@@ -231,7 +231,7 @@ class Roof:
             bbox_inches="tight",
             dpi=400
         )
-        plt.show()
+        #plt.show()
         return
 
     def get_facet_flat_line_id(self, facet_id, line):
