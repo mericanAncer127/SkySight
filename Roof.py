@@ -232,6 +232,7 @@ class Roof:
             dpi=400
         )
         #plt.show()
+        plt.close()
         return
 
     def get_facet_flat_line_id(self, facet_id, line):
