@@ -1,7 +1,6 @@
 import argparse
 import os
 from ReportWriter import *
-import subprocess
 
 REPORT_FOLDER_PATH = "../reports"
 

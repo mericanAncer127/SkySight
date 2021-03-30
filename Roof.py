@@ -399,6 +399,7 @@ class Roof:
             bbox_inches="tight",
             dpi=400
         )
+        plt.close()
         return
 
     def create_area_diagram(self):
@@ -442,6 +443,7 @@ class Roof:
             bbox_inches="tight",
             dpi=400
         )
+        plt.close()
         return
 
     def create_pitch_diagram(self):
