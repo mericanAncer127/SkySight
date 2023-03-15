@@ -341,7 +341,6 @@
 
         google.maps.event.addDomListener(window, 'load', initialize);
 
-
         mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjanVlbGRxbTUwNGVlNDlwcXRxNnFhYnlzIn0.-dc9uxSNW4TUYbC96E8zjA';
 
         var map2 = new mapboxgl.Map({
@@ -351,94 +350,8 @@
             zoom: 12 // starting zoom
         });
 
-        var map = new mapboxgl.Map({
-            container: 'map', // container id
-            style: 'mapbox://styles/secfast/ckihy9e2616ma19oahkhz4nmf',
-            center: [-119, 36], // starting position [lng, lat]
-            zoom: 6 // starting zoom
-        });
-
         var form = document.getElementById("coverage_form");
 
-        function checkCoverage(event) {
-            event.preventDefault();
-
-            var search_res = document.getElementById("search_result");
-            search_res.innerHTML = '';
-
-            var searchAddress = document.getElementById("coverage").value;
-
-            geocoder.geocode({
-                'address': searchAddress
-            }, function(results, status) {
-
-                if (status == "OK") {
-                    var lat = results[0].geometry.location.lat();
-                    var lng = results[0].geometry.location.lng();
-
-                    map.flyTo({
-                        center: [lng, lat],
-                        zoom: 8,
-                        speed: 1.5
-                    });
-
-                    if (marker) {
-                        marker.remove();
-                    }
-
-                    marker = new mapboxgl.Marker()
-                        .setLngLat([lng, lat])
-                        .addTo(map);
-
-                    var is_covered = false;
-                    var flying = true;
-
-                    map.on('moveend', function() {
-                        if (flying) {
-                            var point = map.project([lng, lat]);
-
-                            var features = map.queryRenderedFeatures(point);
-
-                            for (var i = 0; i < features.length; i++) {
-                                if (features[i].layer.id.includes("anyconv")) {
-                                    is_covered = true;
-                                    break;
-                                }
-                            }
-                            if (is_covered) {
-                                let p = document.createElement("p");
-                                search_res.appendChild(p);
-                                p.className = "lead";
-                                p.innerHTML = "<strong>We cover this address!</strong>"
-
-                                let btn = document.createElement("btn");
-                                search_res.appendChild(btn);
-                                btn.className = "btn btn-success p-3 mb-3";
-                                btn.innerText = "Order Report for this Address";
-                                btn.addEventListener("click", function() {
-
-                                    document.getElementById("address").value = searchAddress;
-
-                                    $('html, body').animate({
-                                        scrollTop: $("#Order").offset().top - 10
-                                    }, 1500);
-
-                                    moveMap2();
-                                })
-                            } else {
-                                let p = document.createElement("p");
-                                search_res.appendChild(p);
-                                p.className = "lead";
-                                p.innerText = "Sorry, we do not cover this address. We are expanding our aerial imagery database; please check back later.";
-                            }
-                        }
-                        flying = false;
-                    });
-                }
-            });
-        }
-
-        form.addEventListener('submit', checkCoverage);
     </script>
 </body>
 
