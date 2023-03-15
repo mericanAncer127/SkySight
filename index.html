@@ -330,17 +330,6 @@
             });
         }
 
-        function initialize() {
-            var coverage = document.getElementById('coverage');
-            var coverage_search = new google.maps.places.Autocomplete(coverage);
-
-            var input = document.getElementById('address');
-            var address_search = new google.maps.places.Autocomplete(input);
-            address_search.addListener('place_changed', moveMap2);
-        }
-
-        google.maps.event.addDomListener(window, 'load', initialize);
-
         mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjanVlbGRxbTUwNGVlNDlwcXRxNnFhYnlzIn0.-dc9uxSNW4TUYbC96E8zjA';
 
         var map2 = new mapboxgl.Map({
