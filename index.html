@@ -72,6 +72,9 @@
                 <div class="col-xl-12 mx-auto" style="text-shadow: #000 0px 0px 10px; -webkit-font-smoothing: antialiased;">
                     <h1 class="mb-5">On Demand Roof Measurements</h1>
                 </div>
+                <div class="col-md-3 col-6 mx-auto">
+                    <button id="learn_more" type="submit" class="btn btn-block btn-lg btn-primary">Learn More</button>
+                </div>
             </div>
         </div>
     </header>
@@ -87,13 +90,170 @@
                 <div class="col-lg-4">
                     <img class="mb-3" src="https://skysight.s3.us-east-2.amazonaws.com/dollar-coins.svg" alt="Generic placeholder image" width="100" height="100">
                     <h4>Affordability</h4>
-                    <p class="lead" style="font-size: 20px;">Our roof reports are just <strong>$9</strong></p>
+                    <p class="lead" style="font-size: 20px;">Our comprehensive roof reports are just <strong>$12</strong></p>
                 </div>
                 <div class="col-lg-4">
                     <img class="mb-3" src="https://skysight.s3.us-east-2.amazonaws.com/back-in-time.svg" alt="Generic placeholder image" width="100" height="100">
                     <h4>Fast Turnaround</h4>
-                    <p class="lead" style="font-size: 20px;">You'll receive your roof report <strong>immediately</strong> after ordering</p>
+                    <p class="lead" style="font-size: 20px;">You'll receive your roof report less than <strong>24 hours</strong> after you order, guaranteed</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section py-3 bg-light" id="Check">
+        <div class="container-fluid text-center">
+            <h1 class="pt-4">Check Coverage</h1>
+            <p class="lead">Enter an address and we'll let you know if our aerial imagery covers it!</p>
+            <form id="coverage_form">
+                <div class="row d-flex justify-content-center px-5">
+                    <div class="col-xs-12 col-sm-10 col-md-6 form-group">
+                        <input type="coverage" id="coverage" class="form-control form-control-lg" required></input>
+                        <label for="coverage">Address</label>
+                    </div>
+                </div>
+            </form>
+            <button class="col-4 col-xs-4 col-sm-4 col-md-2 mx-auto mb-4 btn btn-block btn-lg btn-primary" type="submit" form="coverage_form" value="Submit">Check</button>
+            <div id="search_result">
+
+            </div>
+            <div class="col-12 pb-5">
+                <div class="mx-auto" id="map"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="showcase" id="showcase">
+        <div class="container-fluid p-0 text-center">
+            <h1 class="pt-5">SkySight Roof Report<span style="vertical-align: super; font-size: 20px;">&trade;</span></h1>
+
+            <div class="row no-gutters mx-0 px-4" style="border-bottom: 5px solid rgb(69, 88, 133, 0.5); padding-bottom: 50px; text-align: center;">
+                <div class="col-md-8 mx-auto">
+                    <p class="lead">Our Roof Reports<span style="vertical-align: super; font-size: 16px;">&trade;</span> use the most up-to-date aerial imagery available. We use cutting edge Machine Learning techniques to deliver accurate and consistent roof measurements.
+                        <br><br>Each report contains an <strong>Area Diagram</strong>, <strong>Length Diagram</strong>, <strong>Pitch Diagram</strong>, <strong>Orthographic Views</strong>, and a <strong>Summary</strong>.</p>
+
+                    <div class="col-md-4 mx-auto">
+                        <a href="./sample_report.pdf" download="sample_report.pdf" id="learn_more" class="btn btn-block btn-lg btn-primary">Download Sample Roof Report<span style="vertical-align: super; font-size: 16px;">&trade;</span></a>
+                    </div>
+                </div>
+            </div>
+            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
+
+                <div class="col-lg-6 order-lg-2 text-white showcase-img" style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/1.png);"></div>
+                <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+                    <h2>Area Diagram</h2>
+                    <p class="lead mb-0">Areas for each roof facet. Areas are calculated taking into account the pitch and 3D position of the roof.</p>
+                </div>
+            </div>
+            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
+                <div class="col-lg-6 text-white showcase-img" style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/2.png);"></div>
+                <div class="col-lg-6 my-auto showcase-text">
+                    <h2>Length Diagram</h2>
+                    <p class="lead mb-0">Length of all roof lines. Different colors are used to denote Ridges, Hips, Valleys, Rakes, and Eaves.</p>
+                </div>
+            </div>
+            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
+                <div class="col-lg-6 order-lg-2 text-white showcase-img" style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/3.png);"></div>
+                <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+                    <h2>Pitch Diagram</h2>
+                    <p class="lead mb-0">Roof pitches labeled on roof facets. Pitch values are given as a single number and represent the "rise" for a 12 inch "run" (e.g. 8 represents a pitch of 8/12)</p>
+                </div>
+            </div>
+            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
+                <div class="col-lg-6 text-white showcase-img" style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/4.png);"></div>
+                <div class="col-lg-6 my-auto showcase-text">
+                    <h2>Orthographic Views</h2>
+                    <p class="lead mb-0">Views of the address from North, South, East, and West directions.</p>
+                </div>
+            </div>
+            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
+                <div class="col-lg-6 order-lg-2 text-white showcase-img" style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/5.png);"></div>
+                <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+                    <h2>Summary</h2>
+                    <p class="lead mb-0">The summary section of the Roof Report provides the roof areas for each pitch, waste calculations and required squares for varying percentages, and lengths of different roof line types.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-light py-5">
+        <div class="container text-center">
+            <h1>SkySight vs. Eagleview</h1>
+            <p class="lead pb-4">Our comprehensive Roof Reports<span style="vertical-align: super; font-size: 12px;">&trade;</span> provide all the information in an Eagleview Premium Report<span style="vertical-align: super; font-size: 12px;">&trade;</span>, but at a fraction
+                of the cost</p>
+            <div class="table-responsive">
+                <table class="table table-striped text-center" style="border: 1px solid #a6a6a6;">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col" class="lead">SkySight</th>
+                            <th scope="col" class="lead">Eagleview Quicksquares<span style="vertical-align: super; font-size: 16px;">&trade;</span></th>
+                            <th scope="col" class="lead">Eagleview Premium<span style="vertical-align: super; font-size: 16px;">&trade;</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead">Square Count</th>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead">Predominant Pitch</th>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead">Total Roof Area</th>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead">Area Diagram</th>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead">Pitch Diagram</th>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead">Length Diagram</th>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead">Waste Calculations</th>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead">Orthographic Views</th>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                            <td></td>
+                            <td><i class="fa fa-check" style="color: green;"></i></td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead">Turnaround Time</th>
+                            <td>4-12 hours</td>
+                            <td>&lt; 2 business days</td>
+                            <td>&lt; 2 business days</td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #ccc;">
+                            <th scope="row" class="lead font-weight-bold">Price</th>
+                            <th scope="row" class="lead font-weight-bold">$12</th>
+                            <th scope="row" class="lead font-weight-bold">$18-36</th>
+                            <th scope="row" class="lead font-weight-bold">$30-85</th>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </section>
@@ -101,7 +261,9 @@
     <section class="section p-5" id="Order">
         <div class="container text-center">
             <h1 class="m-3">Order a SkySight Roof Report<span style="vertical-align: super; font-size: 20px;">&trade;</span></h1>
-            <p class="lead my-4">Please email <strong>measurements@roofx.ai</strong> with any questions or concerns</p>
+            <p class="lead">Your payment will be authorized, but not processed until your Roof Report<span style="vertical-align: super; font-size: 16px;">&trade;</span> is complete</p>
+            <p class="lead my-4">Please email <strong>contact@skysightdata.com</strong> with any questions or concerns</p>
+            <h2 class="my-4">If you are experiencing issues ordering your report, please email us for support</h2>
             <form id="mail_form">
                 <div class="row">
                     <div class="col-md-6 form-group">
@@ -263,7 +425,16 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-6 h-100 text-center text-lg-left my-auto">
-                    <p class="text-muted small mb-4 mb-lg-0">&copy; SkySight 2023. All Rights Reserved.</p>
+                    <!-- <ul class="list-inline mb-2">
+                        <li class="list-inline-item">
+                            <a href="#">About</a>
+                        </li>
+                        <li class="list-inline-item">&sdot;</li>
+                        <li class="list-inline-item">
+                            <a href="#">Contact</a>
+                        </li>
+                    </ul> -->
+                    <p class="text-muted small mb-4 mb-lg-0">&copy; SkySight 2020. All Rights Reserved.</p>
                 </div>
                 <div class="col-lg-6 h-100 text-center text-lg-right my-auto">
                     <ul class="list-inline mb-0">
@@ -295,6 +466,11 @@
         document.getElementById("order_report").addEventListener("click", function() {
             $('html, body').animate({
                 scrollTop: $("#Order").offset().top - 10
+            }, 1500);
+        })
+        document.getElementById("learn_more").addEventListener("click", function() {
+            $('html, body').animate({
+                scrollTop: $("#showcase").offset().top - 60
             }, 1500);
         })
 
@@ -330,6 +506,18 @@
             });
         }
 
+        function initialize() {
+            var coverage = document.getElementById('coverage');
+            var coverage_search = new google.maps.places.Autocomplete(coverage);
+
+            var input = document.getElementById('address');
+            var address_search = new google.maps.places.Autocomplete(input);
+            address_search.addListener('place_changed', moveMap2);
+        }
+
+        google.maps.event.addDomListener(window, 'load', initialize);
+
+
         mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjanVlbGRxbTUwNGVlNDlwcXRxNnFhYnlzIn0.-dc9uxSNW4TUYbC96E8zjA';
 
         var map2 = new mapboxgl.Map({
@@ -339,8 +527,94 @@
             zoom: 12 // starting zoom
         });
 
+        var map = new mapboxgl.Map({
+            container: 'map', // container id
+            style: 'mapbox://styles/secfast/ckihy9e2616ma19oahkhz4nmf',
+            center: [-119, 36], // starting position [lng, lat]
+            zoom: 6 // starting zoom
+        });
+
         var form = document.getElementById("coverage_form");
 
+        function checkCoverage(event) {
+            event.preventDefault();
+
+            var search_res = document.getElementById("search_result");
+            search_res.innerHTML = '';
+
+            var searchAddress = document.getElementById("coverage").value;
+
+            geocoder.geocode({
+                'address': searchAddress
+            }, function(results, status) {
+
+                if (status == "OK") {
+                    var lat = results[0].geometry.location.lat();
+                    var lng = results[0].geometry.location.lng();
+
+                    map.flyTo({
+                        center: [lng, lat],
+                        zoom: 8,
+                        speed: 1.5
+                    });
+
+                    if (marker) {
+                        marker.remove();
+                    }
+
+                    marker = new mapboxgl.Marker()
+                        .setLngLat([lng, lat])
+                        .addTo(map);
+
+                    var is_covered = false;
+                    var flying = true;
+
+                    map.on('moveend', function() {
+                        if (flying) {
+                            var point = map.project([lng, lat]);
+
+                            var features = map.queryRenderedFeatures(point);
+
+                            for (var i = 0; i < features.length; i++) {
+                                if (features[i].layer.id.includes("anyconv")) {
+                                    is_covered = true;
+                                    break;
+                                }
+                            }
+                            if (is_covered) {
+                                let p = document.createElement("p");
+                                search_res.appendChild(p);
+                                p.className = "lead";
+                                p.innerHTML = "<strong>We cover this address!</strong>"
+
+                                let btn = document.createElement("btn");
+                                search_res.appendChild(btn);
+                                btn.className = "btn btn-success p-3 mb-3";
+                                btn.innerText = "Order Report for this Address";
+                                btn.addEventListener("click", function() {
+
+                                    document.getElementById("address").value = searchAddress;
+
+                                    $('html, body').animate({
+                                        scrollTop: $("#Order").offset().top - 10
+                                    }, 1500);
+
+                                    moveMap2();
+                                })
+                            } else {
+                                let p = document.createElement("p");
+                                search_res.appendChild(p);
+                                p.className = "lead";
+                                p.innerText = "Sorry, we do not cover this address. We are expanding our aerial imagery database; please check back later.";
+                            }
+                        }
+                        flying = false;
+                    });
+                }
+            });
+        }
+
+        form.addEventListener('submit', checkCoverage);
     </script>
 </body>
 
