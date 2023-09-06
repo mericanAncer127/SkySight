@@ -288,81 +288,6 @@ class ReportWriter:
 
         page = self.add_header_to_img(page)
 
-        def create_view_img():
-            imgs = {
-                "North": Image.open(self.folder+"/ims/north.png"),
-                "East": Image.open(self.folder+"/ims/east.png"),
-                "South": Image.open(self.folder+"/ims/south.png"),
-                "West": Image.open(self.folder+"/ims/west.png")
-            }
-
-            min_w, min_h = float("inf"), float("inf")
-            # Find the min width/height
-            for img in imgs.values():
-                min_w, min_h = min(min_w, img.size[0]), min(min_h, img.size[1])
-
-            # Crop and save images
-            final_imgs = dict.fromkeys(imgs.keys())
-
-            for key, img in imgs.items():
-                w, h = img.size
-                m_w, m_h = (w - min_w) / 2, (h - min_h) / 2
-                new = img.crop((
-                    m_w,
-                    m_h,
-                    w - m_w,
-                    h - m_h
-                ))
-
-                final_imgs[key] = new
-
-                # new.save(os.path.join(folder, str(i) + ".png"))
-
-            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
-            ax1.imshow(final_imgs["North"])
-            ax1.set_title("North Side")
-            ax1.axis("off")
-
-            ax2.imshow(final_imgs["South"])
-            ax2.set_title("South Side")
-            ax2.axis("off")
-
-            ax3.imshow(final_imgs["East"])
-            ax3.set_title("East Side")
-            ax3.axis("off")
-
-            ax4.imshow(final_imgs["West"])
-            ax4.set_title("West Side")
-            ax4.axis("off")
-
-            plt.tight_layout()
-            plt.savefig(os.path.join(self.folder, "views"), dpi=900)
-            return
-
-        def add_image():
-            box_left = 160
-            box_right = 1110
-            box_top = 375
-            box_bottom = 1360
-
-            img = Image.open(os.path.join(self.folder, "views.png"))
-
-            img, pos = get_fit_image(img, (box_left, box_right, box_top, box_bottom))
-
-            page.paste(img, pos)
-
-            return
-
-        create_view_img()
-        add_image()
-
-        return page
-
-    def make_page_6(self):
-        page = Image.open("report_page_templates/page_6.jpg")
-
-        page = self.add_header_to_img(page)
-
         draw = ImageDraw.Draw(page)
 
         def fill_pitch_and_area_table():
@@ -451,7 +376,6 @@ class ReportWriter:
             self.make_page_3(),
             self.make_page_4(),
             self.make_page_5(),
-            self.make_page_6()
         ]
 
         cover_img.save(filename, "PDF", resolution=100.0,
