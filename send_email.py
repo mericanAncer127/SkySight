@@ -26,7 +26,7 @@ Attached is your SkySight Roof Report™ for ADDRESS. Your payment of $12 will b
 
 Thank you for using SkySight!
 The SkySight Team
-skysightdata.com
+skysightroofing.com
 
 Follow us on:
 Facebook - https://www.facebook.com/SkySightData/
@@ -153,13 +153,13 @@ if __name__ == '__main__':
     try:
         service = get_service()
         message = create_message(
-          "contact@skysightdata.com",
+          "sam@skysightroofing.com",
           CONTACT,
           SUBJECT,
           BODY,
           [report])
 
-        send_message(service, "contact@skysightdata.com", message)
+        send_message(service, "sam@skysightroofing.com", message)
 
     except Exception as e:
         logging.error(e)
