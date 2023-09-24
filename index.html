@@ -1,683 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Order Roof Measurements</title>
-
-    <!-- Bootstrap core CSS -->
-    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom fonts for this template -->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
-    <link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,700,300italic,400italic,700italic"
-        rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,700,300italic,400italic,700italic"
-        rel="stylesheet" type="text/css">
-
-    <!-- Custom styles for this template -->
-    <link href="css/landing-page.min.css" rel="stylesheet">
-
-    <script type="text/javascript"
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_xpbVEp9woLniuF8Cl-2TG80wkte6JiU&libraries=places"></script>
-
-    <link rel="icon" href="https://skysight.s3.us-east-2.amazonaws.com/roof.svg">
-
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.css" rel="stylesheet" />
-    <script src="https://www.paypal.com/sdk/js?client-id=sb" data-csp-nonce="xyz-123"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapbox Building Footprints with Address Lookup and Roof Area</title>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
     <style>
-        #map {
-            position: relative;
-            width: 100%;
-            max-width: 1000px;
-            height: 100vw;
-            max-height: 600px;
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            text-align: center;
         }
-
-        #map2 {
-            position: relative;
-            width: 100%;
-            max-width: 1000px;
-            height: 100vw;
-            max-height: 600px;
-        }
-
-        #smart-button-container {
-            width: 500px;
-        }
-
-        @media (max-width: 600px) {
-            #smart-button-container {
-                width: auto;
-            }
+        th, td {
+            padding: 8px;
         }
     </style>
-
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.js"></script>
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.css"
-        type="text/css" />
 </head>
-
 <body>
 
-    <nav class="navbar navbar-expand-md fixed-top bg-light p-1">
-        <div class="container-fluid">
-            <a class="navbar-brand mx-auto py-0" style="font-size: 34px; color: black;" href="./index.html">
-                <img src="https://skysight.s3.us-east-2.amazonaws.com/roof.svg" style="padding-bottom: 5px;" width="65"
-                    height="65"> SkySight
-            </a>
-            <div class="my-2 my-sm-0 mx-auto">
-                <button id="order_report" class="btn btn-outline-success px-4" type="submit">Order Roof Report</button>
-            </div>
-        </div>
-    </nav>
+<div style="text-align: center;">
+    <h2>Step 1: Enter an address</h2>
+</div>
+<input id="address" type="text" placeholder="Enter an address" style="width: 40%; height:30px; margin: 10px 50px 10px 200px;">
+<button onclick="locateAddress()">Locate Address</button>
+<div style="text-align: center;">
+    <h2>Step 2: Click on the roof to get measurements</h2>
+</div>
 
-    <header class="masthead text-white text-center">
-        <div class="overlay"></div>
-        <div class="container">
-            <div class="row">
-                <div class="col-xl-12 mx-auto"
-                    style="text-shadow: #000 0px 0px 10px; -webkit-font-smoothing: antialiased;">
-                    <h1 class="mb-5">On Demand Roof Measurements</h1>
-                </div>
-                <div class="col-md-3 col-6 mx-auto">
-                    <button id="learn_more" type="submit" class="btn btn-block btn-lg btn-primary">Learn More</button>
-                </div>
-            </div>
-        </div>
-    </header>
+<div id="map" style="left:10%; right:10%; width: 80%; height: 400px;"></div>
 
-    <section class="section p-5" id="About">
-        <div class="container-fluid text-center">
-            <div class="row">
-                <div class="col-lg-4">
-                    <img class="mb-3" src="https://skysight.s3.us-east-2.amazonaws.com/pencil-and-ruler.svg"
-                        alt="Generic placeholder image" width="100" height="100">
-                    <h4>Accuracy</h4>
-                    <p class="lead" style="font-size: 20px;">We use the most up-to-date aerial imagery to deliver
-                        <strong>precise</strong> measurements</p>
-                </div>
-                <div class="col-lg-4">
-                    <img class="mb-3" src="https://skysight.s3.us-east-2.amazonaws.com/dollar-coins.svg"
-                        alt="Generic placeholder image" width="100" height="100">
-                    <h4>Affordability</h4>
-                    <p class="lead" style="font-size: 20px;">Our comprehensive roof reports are just
-                        <strong>$12</strong></p>
-                </div>
-                <div class="col-lg-4">
-                    <img class="mb-3" src="https://skysight.s3.us-east-2.amazonaws.com/back-in-time.svg"
-                        alt="Generic placeholder image" width="100" height="100">
-                    <h4>Fast Turnaround</h4>
-                    <p class="lead" style="font-size: 20px;">You'll receive your roof report less than <strong>24
-                            hours</strong> after you order, guaranteed</p>
-                </div>
-            </div>
-        </div>
-    </section>
+<table id="areaTable" style="width: 100%; margin-top: 20px;">
+    <thead>
+        <tr>
+            <th>Pitch Value</th>
+            <th>Roof Area (Squares)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Rows will be added here dynamically -->
+    </tbody>
+</table>
 
-    <section class="section py-3 bg-light" id="Check">
-        <div class="container-fluid text-center">
-            <h1 class="pt-4">Check Coverage</h1>
-            <p class="lead">Enter an address and we'll let you know if our aerial imagery covers it!</p>
-            <form id="coverage_form">
-                <div class="row d-flex justify-content-center px-5">
-                    <div class="col-xs-12 col-sm-10 col-md-6 form-group">
-                        <input type="coverage" id="coverage" class="form-control form-control-lg" required></input>
-                        <label for="coverage">Address</label>
-                    </div>
-                </div>
-            </form>
-            <button class="col-4 col-xs-4 col-sm-4 col-md-2 mx-auto mb-4 btn btn-block btn-lg btn-primary" type="submit"
-                form="coverage_form" value="Submit">Check</button>
-            <div id="search_result">
+<script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjanVlbGRxbTUwNGVlNDlwcXRxNnFhYnlzIn0.-dc9uxSNW4TUYbC96E8zjA';
+let currentMarker;
 
-            </div>
-            <div class="col-12 pb-5">
-                <div class="mx-auto" id="map"></div>
-            </div>
-        </div>
-    </section>
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [-74.006, 40.7128], // New York City as default
+    zoom: 15
+});
 
-    <section class="showcase" id="showcase">
-        <div class="container-fluid p-0 text-center">
-            <h1 class="pt-5">SkySight Roof Report<span style="vertical-align: super; font-size: 20px;">&trade;</span>
-            </h1>
+map.on('load', function() {
+    map.addSource('buildings', {
+        type: 'vector',
+        url: 'mapbox://mapbox.mapbox-streets-v8'
+    });
 
-            <div class="row no-gutters mx-0 px-4"
-                style="border-bottom: 5px solid rgb(69, 88, 133, 0.5); padding-bottom: 50px; text-align: center;">
-                <div class="col-md-8 mx-auto">
-                    <p class="lead">Our Roof Reports<span style="vertical-align: super; font-size: 16px;">&trade;</span>
-                        use the most up-to-date aerial imagery available. We use cutting edge Machine Learning
-                        techniques to deliver accurate and consistent roof measurements.
-                        <br><br>Each report contains an <strong>Area Diagram</strong>, <strong>Length Diagram</strong>,
-                        <strong>Pitch Diagram</strong>, <strong>Orthographic Views</strong>, and a
-                        <strong>Summary</strong>.
-                    </p>
+    map.addLayer({
+        'id': 'building-extrusion',
+        'type': 'fill-extrusion',
+        'source': 'buildings',
+        'source-layer': 'building',
+        'paint': {
+            'fill-extrusion-color': '#aaa',
+            'fill-extrusion-height': {
+                'type': 'identity',
+                'property': 'height'
+            }
+        }
+    });
 
-                    <div class="col-md-4 mx-auto">
-                        <a href="./sample_report.pdf" download="sample_report.pdf" id="learn_more"
-                            class="btn btn-block btn-lg btn-primary">Download Sample Roof Report<span
-                                style="vertical-align: super; font-size: 16px;">&trade;</span></a>
-                    </div>
-                </div>
-            </div>
-            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
+    map.on('mouseenter', 'building-extrusion', function() {
+        map.getCanvas().style.cursor = 'pointer';
+    });
 
-                <div class="col-lg-6 order-lg-2 text-white showcase-img"
-                    style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/1.png);">
-                </div>
-                <div class="col-lg-6 order-lg-1 my-auto showcase-text">
-                    <h2>Area Diagram</h2>
-                    <p class="lead mb-0">Areas for each roof facet. Areas are calculated taking into account the pitch
-                        and 3D position of the roof.</p>
-                </div>
-            </div>
-            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
-                <div class="col-lg-6 text-white showcase-img"
-                    style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/2.png);">
-                </div>
-                <div class="col-lg-6 my-auto showcase-text">
-                    <h2>Length Diagram</h2>
-                    <p class="lead mb-0">Length of all roof lines. Different colors are used to denote Ridges, Hips,
-                        Valleys, Rakes, and Eaves.</p>
-                </div>
-            </div>
-            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
-                <div class="col-lg-6 order-lg-2 text-white showcase-img"
-                    style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/3.png);">
-                </div>
-                <div class="col-lg-6 order-lg-1 my-auto showcase-text">
-                    <h2>Pitch Diagram</h2>
-                    <p class="lead mb-0">Roof pitches labeled on roof facets. Pitch values are given as a single number
-                        and represent the "rise" for a 12 inch "run" (e.g. 8 represents a pitch of 8/12)</p>
-                </div>
-            </div>
-            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
-                <div class="col-lg-6 text-white showcase-img"
-                    style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/4.png);">
-                </div>
-                <div class="col-lg-6 my-auto showcase-text">
-                    <h2>Orthographic Views</h2>
-                    <p class="lead mb-0">Views of the address from North, South, East, and West directions.</p>
-                </div>
-            </div>
-            <div class="row no-gutters" style="padding: 20px; border-bottom: 5px solid rgb(69, 88, 133, 0.5);">
-                <div class="col-lg-6 order-lg-2 text-white showcase-img"
-                    style="background-image: url(https://skysight.s3.us-east-2.amazonaws.com/sample_report_imgs/5.png);">
-                </div>
-                <div class="col-lg-6 order-lg-1 my-auto showcase-text">
-                    <h2>Summary</h2>
-                    <p class="lead mb-0">The summary section of the Roof Report provides the roof areas for each pitch,
-                        waste calculations and required squares for varying percentages, and lengths of different roof
-                        line types.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+    map.on('mouseleave', 'building-extrusion', function() {
+        map.getCanvas().style.cursor = '';
+    });
 
-    <section class="bg-light py-5">
-        <div class="container text-center">
-            <h1>SkySight vs. Eagleview</h1>
-            <p class="lead pb-4">Our comprehensive Roof Reports<span
-                    style="vertical-align: super; font-size: 12px;">&trade;</span> provide all the information in an
-                Eagleview Premium Report<span style="vertical-align: super; font-size: 12px;">&trade;</span>, but at a
-                fraction
-                of the cost</p>
-            <div class="table-responsive">
-                <table class="table table-striped text-center" style="border: 1px solid #a6a6a6;">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th scope="col"></th>
-                            <th scope="col" class="lead">SkySight</th>
-                            <th scope="col" class="lead">Eagleview Quicksquares<span
-                                    style="vertical-align: super; font-size: 16px;">&trade;</span></th>
-                            <th scope="col" class="lead">Eagleview Premium<span
-                                    style="vertical-align: super; font-size: 16px;">&trade;</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead">Square Count</th>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                        </tr>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead">Predominant Pitch</th>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                        </tr>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead">Total Roof Area</th>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                        </tr>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead">Area Diagram</th>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                        </tr>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead">Pitch Diagram</th>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                        </tr>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead">Length Diagram</th>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                        </tr>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead">Waste Calculations</th>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                        </tr>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead">Orthographic Views</th>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                            <td></td>
-                            <td><i class="fa fa-check" style="color: green;"></i></td>
-                        </tr>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead">Turnaround Time</th>
-                            <td>< 24 hours</td>
-                            <td>&lt; 2 business days</td>
-                            <td>&lt; 2 business days</td>
-                        </tr>
-                        <tr style="border-bottom: 2px solid #ccc;">
-                            <th scope="row" class="lead font-weight-bold">Price</th>
-                            <th scope="row" class="lead font-weight-bold">$12</th>
-                            <th scope="row" class="lead font-weight-bold">$18-36</th>
-                            <th scope="row" class="lead font-weight-bold">$30-85</th>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
+    map.on('click', 'building-extrusion', function(e) {
+        const feature = e.features[0];
 
-    <section class="section p-5" id="Order">
-        <div class="container text-center">
-            <h1 class="m-3">Order a SkySight Roof Report<span
-                    style="vertical-align: super; font-size: 20px;">&trade;</span></h1>
-            <p class="lead">Your payment will be authorized, but not processed until your Roof Report<span
-                    style="vertical-align: super; font-size: 16px;">&trade;</span> is complete</p>
-            <p class="lead my-4">Please email <strong>skysightroofing@gmail.com</strong> with any questions or concerns
-            </p>
-            <h2 class="my-4">If you are experiencing issues ordering your report, please email us for support</h2>
-            <form id="mail_form">
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label for="fname">First Name</label>
-                        <input type="text" class="form-control form-control-lg" id="fname" required>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label for="lname">Last Name</label>
-                        <input type="text" class="form-control form-control-lg" id="lname">
-                    </div>
-                </div>
-                <div class="row d-flex justify-content-center">
-                    <div class="col-md-6 form-group">
-                        <label for="business">Business</label>
-                        <input type="text" class="form-control form-control-lg" id="business" required>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" class="form-control form-control-lg" required>
-                    </div>
-                </div>
-                <div class="row d-flex justify-content-center">
-                    <div class="col-md-7 form-group">
-                        <label for="address">Address</label>
-                        <input type="address" id="address" class="form-control form-control-lg" required></input>
-                    </div>
-                </div>
-                <div class="col-12 py-5">
-                    <p class="lead">First, enter an address. Then drag the marker on top of the property you'd like the
-                        report for</p>
-                    <div class="mx-auto" id="map2"></div>
-                </div>
-                <div class="row d-flex justify-content-center">
-                    <div class="col-md-7 form-group">
-                        <label for="messsage">Additional Information</label>
-                        <textarea name="message" id="message" class="form-control form-control-lg" cols="30"
-                            rows="7"></textarea>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </section>
-
-    <section class="section p-0" id="Pay" style="text-align: center;">
-        <div class="container-fluid text-center px-5" style="     display: flex;
-        justify-content: center;
-        flex-direction: column;
-        align-items: center;">
-            <p class="lead">Choose your payment method</p>
-            <div id="smart-button-container">
-                <div style="text-align: center;">
-                    <div id="paypal-button-container"></div>
-                </div>
-            </div>
-            <!-- The core Firebase JS SDK is always required and must be listed first -->
-            <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-app.js"></script>
-
-            <!-- TODO: Add SDKs for Firebase products that you want to use
-     https://firebase.google.com/docs/web/setup#available-libraries -->
-            <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-analytics.js"></script>
-
-            <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-database.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-database.js"></script>
-
-            <script>
-                // Your web app's Firebase configuration
-                // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-                var firebaseConfig = {
-                    apiKey: "AIzaSyDcfNiX_G3-Erw8aQ_BEPPTjc_EVhbxQVs",
-                    authDomain: "skysight-2ed81.firebaseapp.com",
-                    databaseURL: "https://skysight-2ed81.firebaseio.com",
-                    projectId: "skysight-2ed81",
-                    storageBucket: "skysight-2ed81.appspot.com",
-                    messagingSenderId: "118321681215",
-                    appId: "1:118321681215:web:2e0fe75b03dd1b47ebf98a",
-                    measurementId: "G-WRFJ15HJ9P"
-                };
-                // Initialize Firebase
-                firebase.initializeApp(firebaseConfig);
-                firebase.analytics();
-            </script>
-            <script
-                src="https://www.paypal.com/sdk/js?client-id=AVxzdYTReY12Py8W5y_1yGnjNI0DgNYFokLHlwKpbCLirXkzpLctr-jWczwKJ2dskC6PFNdZ6HRahZEu&currency=USD&intent=authorize"
-                data-sdk-integration-source="button-factory"></script>
-            <script>
-                function initPayPalButton() {
-                    paypal.Buttons({
-                        style: {
-                            shape: 'rect',
-                            color: 'gold',
-                            layout: 'vertical',
-                            label: 'paypal',
-                        },
-
-                        createOrder: function (data, actions) {
-                            window.fname = document.getElementById('fname').value;
-                            window.lname = document.getElementById('lname').value;
-                            window.business = document.getElementById('business').value;
-                            window.email = document.getElementById('email').value;
-                            window.address = document.getElementById('address').value;
-                            window.message = document.getElementById('message').value;
-
-                            return actions.order.create({
-                                purchase_units: [{
-                                    "description": "SkySight Roof Report",
-                                    "amount": {
-                                        "currency_code": "USD",
-                                        "value": 12
-                                    }
-                                }]
-                            });
-                        },
-
-                        onApprove: function (data, actions) {
-                            actions.order.authorize().then(function (authorization) {
-
-                                var authorizationID = authorization.purchase_units[0].payments.authorizations[0].id;
-
-                                function firebasePush(input) {
-                                    //push itself
-                                    var mailsRef = firebase.database().ref('orders').push().set({
-                                        fname: input.fname,
-                                        lname: input.lname,
-                                        business: input.business,
-                                        email: input.email,
-                                        location: input.location,
-                                        message: input.message,
-                                        orderID: input.orderID,
-                                        authID: input.authID,
-                                        roof_coords: input.roof_coords
-                                    });
-                                }
-
-                                // Get marker lat/lng
-                                var roof_coords = marker._lngLat.lng.toString() + "_" + marker._lngLat.lat.toString();
-
-                                firebasePush({
-                                    "fname": window.fname,
-                                    "lname": window.lname,
-                                    "business": window.business,
-                                    "email": window.email,
-                                    "location": window.address,
-                                    "message": window.message,
-                                    "orderID": data.orderID,
-                                    "authID": authorizationID,
-                                    "roof_coords": roof_coords
-                                });
-
-                                $('#mail_form')[0].reset();
-                                alert('Payment authorized. We are reviewing your order and will email your Roof Report shortly. Thank you for using SkySight!');
-                            });
-                        },
-
-                        onError: function (err) {
-                            console.log(err);
-                        }
-                    }).render('#paypal-button-container');
-                }
-                initPayPalButton();
-            </script>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer bg-light">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6 h-100 text-center text-lg-left my-auto">
-                    <!-- <ul class="list-inline mb-2">
-                        <li class="list-inline-item">
-                            <a href="#">About</a>
-                        </li>
-                        <li class="list-inline-item">&sdot;</li>
-                        <li class="list-inline-item">
-                            <a href="#">Contact</a>
-                        </li>
-                    </ul> -->
-                    <p class="text-muted small mb-4 mb-lg-0">&copy; SkySight 2020. All Rights Reserved.</p>
-                </div>
-                <div class="col-lg-6 h-100 text-center text-lg-right my-auto">
-                    <ul class="list-inline mb-0">
-                        <li class="list-inline-item mr-3">
-                            <a href="https://www.facebook.com/SkySight-108172494444197" target="_blank">
-                                <i class="fab fa-facebook fa-2x fa-fw"></i>
-                            </a>
-                        </li>
-                        <li class="list-inline-item mr-3">
-                            <a href="https://twitter.com/skysightdata" target="_blank">
-                                <i class="fab fa-twitter-square fa-2x fa-fw"></i>
-                            </a>
-                        </li>
-                        <li class="list-inline-item">
-                            <a href="https://www.instagram.com/skysightdata/" target="_blank">
-                                <i class="fab fa-instagram fa-2x fa-fw"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Bootstrap core JavaScript -->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.getElementById("order_report").addEventListener("click", function () {
-            $('html, body').animate({
-                scrollTop: $("#Order").offset().top - 10
-            }, 1500);
-        })
-        document.getElementById("learn_more").addEventListener("click", function () {
-            $('html, body').animate({
-                scrollTop: $("#showcase").offset().top - 60
-            }, 1500);
-        })
-
-        var geocoder = new google.maps.Geocoder();
-        var marker = null;
-
-        function moveMap2() {
-            var address = document.getElementById("address").value;
-            geocoder.geocode({
-                'address': address
-            }, function (results, status) {
-
-                if (status == "OK") {
-                    var lat = results[0].geometry.location.lat();
-                    var lng = results[0].geometry.location.lng();
-
-                    map2.flyTo({
-                        center: [lng, lat],
-                        zoom: 18,
-                        speed: 1.5
-                    });
-
-                    if (marker) {
-                        marker.remove();
-                    }
-
-                    marker = new mapboxgl.Marker({
-                        draggable: true
-                    })
-                        .setLngLat([lng, lat])
-                        .addTo(map2);
-                }
-            });
+        if (currentMarker) {
+            currentMarker.remove();
         }
 
-        function initialize() {
-            var coverage = document.getElementById('coverage');
-            var coverage_search = new google.maps.places.Autocomplete(coverage);
+        const centroid = turf.centroid(feature);
+        currentMarker = new mapboxgl.Marker().setLngLat(centroid.geometry.coordinates).addTo(map);
 
-            var input = document.getElementById('address');
-            var address_search = new google.maps.places.Autocomplete(input);
-            address_search.addListener('place_changed', moveMap2);
+        updateRoofAreaTable(feature);
+    });
+});
+
+function locateAddress() {
+    const address = document.getElementById('address').value;
+
+    fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxgl.accessToken}`)
+    .then(response => response.json())
+    .then(data => {
+        const coordinates = data.features[0].geometry.coordinates;
+
+        if (currentMarker) {
+            currentMarker.remove();
         }
 
-        google.maps.event.addDomListener(window, 'load', initialize);
+        currentMarker = new mapboxgl.Marker().setLngLat(coordinates).addTo(map);
+        map.flyTo({ center: coordinates });
+    });
+}
 
+function calculatePolygonArea(points) {
+    // Construct a polygon feature from the points
+    const polygon = turf.polygon(points);
 
-        mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjanVlbGRxbTUwNGVlNDlwcXRxNnFhYnlzIn0.-dc9uxSNW4TUYbC96E8zjA';
+    // Calculate area in square meters
+    const areaM2 = turf.area(polygon);
 
-        var map2 = new mapboxgl.Map({
-            container: 'map2', // container id
-            style: 'mapbox://styles/mapbox/satellite-v9', //hosted style id
-            center: [-91.874, 42.76], // starting position
-            zoom: 12 // starting zoom
-        });
+    // Convert area to square feet (1 m^2 is approximately 10.7639 ft^2)
+    const areaFt2 = areaM2 * 10.7639;
 
-        var map = new mapboxgl.Map({
-            container: 'map', // container id
-            style: 'mapbox://styles/secfast/ckihy9e2616ma19oahkhz4nmf',
-            center: [-119, 36], // starting position [lng, lat]
-            zoom: 6 // starting zoom
-        });
+    return (areaFt2/100).toFixed(1);
+}
 
-        var form = document.getElementById("coverage_form");
+function updateRoofAreaTable(feature) {
+    const coords = feature._geometry.coordinates;
+    areaFt2=calculatePolygonArea(coords);
 
-        function checkCoverage(event) {
-            event.preventDefault();
+    const tableBody = document.getElementById('areaTable').querySelector('tbody');
+    tableBody.innerHTML = '';
 
-            var search_res = document.getElementById("search_result");
-            search_res.innerHTML = '';
+    for(let i = 0; i <= 15; i++) {
+        const adjustedArea = areaFt2 / Math.cos(Math.atan(i/12));
+        const row = `<tr><td>${i}</td><td>${adjustedArea.toFixed(2)}</td></tr>`;
+        tableBody.innerHTML += row;
+    }
+}
 
-            var searchAddress = document.getElementById("coverage").value;
+</script>
 
-            geocoder.geocode({
-                'address': searchAddress
-            }, function (results, status) {
-
-                if (status == "OK") {
-                    var lat = results[0].geometry.location.lat();
-                    var lng = results[0].geometry.location.lng();
-
-                    map.flyTo({
-                        center: [lng, lat],
-                        zoom: 8,
-                        speed: 1.5
-                    });
-
-                    if (marker) {
-                        marker.remove();
-                    }
-
-                    marker = new mapboxgl.Marker()
-                        .setLngLat([lng, lat])
-                        .addTo(map);
-
-                    var is_covered = false;
-                    var flying = true;
-
-                    map.on('moveend', function () {
-                        if (flying) {
-                            var point = map.project([lng, lat]);
-
-                            var features = map.queryRenderedFeatures(point);
-
-                            for (var i = 0; i < features.length; i++) {
-                                if (features[i].layer.id.includes("anyconv")) {
-                                    is_covered = true;
-                                    break;
-                                }
-                            }
-                            if (is_covered) {
-                                let p = document.createElement("p");
-                                search_res.appendChild(p);
-                                p.className = "lead";
-                                p.innerHTML = "<strong>We cover this address!</strong>"
-
-                                let btn = document.createElement("btn");
-                                search_res.appendChild(btn);
-                                btn.className = "btn btn-success p-3 mb-3";
-                                btn.innerText = "Order Report for this Address";
-                                btn.addEventListener("click", function () {
-
-                                    document.getElementById("address").value = searchAddress;
-
-                                    $('html, body').animate({
-                                        scrollTop: $("#Order").offset().top - 10
-                                    }, 1500);
-
-                                    moveMap2();
-                                })
-                            } else {
-                                let p = document.createElement("p");
-                                search_res.appendChild(p);
-                                p.className = "lead";
-                                p.innerText = "Sorry, we do not cover this address. We are expanding our aerial imagery database; please check back later.";
-                            }
-                        }
-                        flying = false;
-                    });
-                }
-            });
-        }
-
-        form.addEventListener('submit', checkCoverage);
-    </script>
 </body>
-
 </html>
+
