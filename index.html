@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapbox Building Footprints with Address Lookup and Roof Area</title>
+    <title>Instant $5 Roof Measurements</title>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
@@ -33,7 +33,9 @@
 
 <div style="text-align: center;">
     <h2>Step 3: Make payment to reveal blacked-out measurements below</h2>
-    <div id="paypal-button-container" style="margin-left:20%;"></div>
+    <div style="display: flex; justify-content: center; align-items: center;">
+        <div id="paypal-button-container"></div>
+    </div>
     <script src="https://www.paypal.com/sdk/js?client-id=AZVhAcXezHxgqd1qBCcWQAyASwZRsDzn25TCX52BKlTQ8UQerc66E2L76uKLIEDKwgLFbiWs9TOLian7"></script>
     <script>
         paypal.Buttons({
@@ -143,7 +145,7 @@ function locateAddress() {
             currentMarker.remove();
         }
         currentMarker = new mapboxgl.Marker().setLngLat(coordinates).addTo(map);
-        map.flyTo({ center: coordinates });
+        map.flyTo({ center: coordinates, zoom: 19});
     });
 }
 
