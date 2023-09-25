@@ -8,6 +8,10 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
     <style>
+        body {
+            background-color: white;
+            color: black;
+        }
         table, th, td {
             border: 1px solid black;
             border-collapse: collapse;
@@ -22,9 +26,9 @@
 
 <div style="text-align: center;">
     <h2>Step 1: Enter an address</h2>
+    <input id="address" type="text" placeholder="Enter an address">
+    <button onclick="locateAddress()">Locate Address</button>
 </div>
-<input id="address" type="text" placeholder="Enter an address" style="width: 40%; height:30px; margin: 10px 50px 10px 200px;">
-<button onclick="locateAddress()">Locate Address</button>
 <div style="text-align: center;">
     <h2>Step 2: Click on the roof to get measurements</h2>
 </div>
@@ -145,7 +149,7 @@ function locateAddress() {
             currentMarker.remove();
         }
         currentMarker = new mapboxgl.Marker().setLngLat(coordinates).addTo(map);
-        map.flyTo({ center: coordinates, zoom: 19});
+        map.flyTo({ center: coordinates, zoom: 18.5});
     });
 }
 
