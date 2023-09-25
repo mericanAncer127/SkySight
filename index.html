@@ -153,7 +153,6 @@ function locateAddress() {
         if (currentMarker) {
             currentMarker.remove();
         }
-        currentMarker = new mapboxgl.Marker().setLngLat(coordinates).addTo(map);
         map.flyTo({ center: coordinates, zoom: 18.5});
     });
 }
@@ -309,30 +308,6 @@ async function generatePDF() {
                                 y: 0,
                                 w: 500, // Adjust width as needed
                                 h: 10, // Height of the first bar (dark blue)
-                                color: '#fff', // Dark blue color
-                            }
-                        ],
-                        width: 500,
-                        height: 10,
-                    }
-                ],
-                alignment: 'center',
-            }
-        ],
-    };
-    const header6 = {
-        columns: [
-            {
-                width: '*',
-                stack: [
-                    {
-                        canvas: [
-                            {
-                                type: 'rect',
-                                x: -15,
-                                y: 0,
-                                w: 500, // Adjust width as needed
-                                h: 10, // Height of the first bar (dark blue)
                                 color: '#003f5c', // Dark blue color
                             }
                         ],
@@ -351,7 +326,6 @@ async function generatePDF() {
             header1,
             header2,
             header3,
-            header4,
             {
                 image: imgDataMap,
                 width: 500  // Adjust width as needed
@@ -360,8 +334,8 @@ async function generatePDF() {
                 image: imgDataTable,
                 width: 500  // Adjust width as needed
             },
-            header5,
-            header6
+            header4,
+            header5
         ]
     };
     pdfMake.createPdf(docDefinition).download('download.pdf');
