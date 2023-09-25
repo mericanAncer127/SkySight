@@ -31,17 +31,56 @@
 
 <div id="map" style="left:10%; right:10%; width: 80%; height: 400px;"></div>
 
-<table id="areaTable" style="width: 100%; margin-top: 20px;">
-    <thead>
-        <tr>
-            <th>Pitch Value</th>
-            <th>Roof Area (Squares)</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Rows will be added here dynamically -->
-    </tbody>
-</table>
+<div style="text-align: center;">
+    <h2>Step 3: Make payment to reveal blacked-out measurements below</h2>
+    <div id="paypal-button-container" style="margin-left:20%;"></div>
+    <script src="https://www.paypal.com/sdk/js?client-id=AZVhAcXezHxgqd1qBCcWQAyASwZRsDzn25TCX52BKlTQ8UQerc66E2L76uKLIEDKwgLFbiWs9TOLian7"></script>
+    <script>
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            currency_code: 'USD',
+                            value: '5.00'
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                revealMeasurements();
+                return actions.order.capture().then(function(details) {
+                    alert('Transaction completed by ' + details.payer.name.given_name + '!');
+                });
+            }
+        }).render('#paypal-button-container');
+
+    </script>
+</div>
+
+<div id="table" style="margin: 0 100px 0 100px;">
+    <table id="areaTable" style="width: 100%; margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>Pitch Value</th>
+                <th>Roof Area (Squares)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be added here dynamically -->
+        </tbody>
+    </table>
+</div>
+
+<div style="text-align: center;">
+    <h2>Step 4: Download measurements</h2>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/vfs_fonts.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+    <button onclick="generatePDF()">Download PDF</button>
+</div>
 
 <script>
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjanVlbGRxbTUwNGVlNDlwcXRxNnFhYnlzIn0.-dc9uxSNW4TUYbC96E8zjA';
@@ -51,7 +90,8 @@ const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11',
     center: [-74.006, 40.7128], // New York City as default
-    zoom: 15
+    zoom: 15,
+    preserveDrawingBuffer: true
 });
 
 map.on('load', function() {
@@ -84,45 +124,33 @@ map.on('load', function() {
 
     map.on('click', 'building-extrusion', function(e) {
         const feature = e.features[0];
-
         if (currentMarker) {
             currentMarker.remove();
         }
-
         const centroid = turf.centroid(feature);
         currentMarker = new mapboxgl.Marker().setLngLat(centroid.geometry.coordinates).addTo(map);
-
         updateRoofAreaTable(feature);
     });
 });
 
 function locateAddress() {
     const address = document.getElementById('address').value;
-
     fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxgl.accessToken}`)
     .then(response => response.json())
     .then(data => {
         const coordinates = data.features[0].geometry.coordinates;
-
         if (currentMarker) {
             currentMarker.remove();
         }
-
         currentMarker = new mapboxgl.Marker().setLngLat(coordinates).addTo(map);
         map.flyTo({ center: coordinates });
     });
 }
 
 function calculatePolygonArea(points) {
-    // Construct a polygon feature from the points
     const polygon = turf.polygon(points);
-
-    // Calculate area in square meters
     const areaM2 = turf.area(polygon);
-
-    // Convert area to square feet (1 m^2 is approximately 10.7639 ft^2)
     const areaFt2 = areaM2 * 10.7639;
-
     return (areaFt2/100).toFixed(1);
 }
 
@@ -135,13 +163,39 @@ function updateRoofAreaTable(feature) {
 
     for(let i = 0; i <= 15; i++) {
         const adjustedArea = areaFt2 / Math.cos(Math.atan(i/12));
-        const row = `<tr><td>${i}</td><td>${adjustedArea.toFixed(2)}</td></tr>`;
+        const row = `<tr><td>${i}</td><td id="cell${i.toString()}" style="background-color:black;">${adjustedArea.toFixed(2)}</td></tr>`;
         tableBody.innerHTML += row;
     }
 }
 
-</script>
+function revealMeasurements() {
+    for(let i = 0; i <= 15; i++) {
+        var a=document.getElementById("cell"+i.toString());
+        a.style.background="white";
+    }
+}
 
+async function generatePDF() {
+    const imgDataMap = map.getCanvas().toDataURL();
+
+    const canvasTable = await html2canvas(document.getElementById('table'));
+    const imgDataTable = canvasTable.toDataURL('image/png');
+
+    const docDefinition = {
+        content: [
+            {
+                image: imgDataMap,
+                width: 500  // Adjust width as needed
+            },
+            {
+                image: imgDataTable,
+                width: 500  // Adjust width as needed
+            }
+        ]
+    };
+    pdfMake.createPdf(docDefinition).download('download.pdf');
+}
+</script>
 </body>
 </html>
 
