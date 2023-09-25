@@ -7,6 +7,7 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfkit/0.12.2/pdfkit.js"></script>
     <style>
         body {
             background-color: white;
@@ -25,6 +26,9 @@
 </head>
 <body>
 
+<div style="text-align: center;">
+    <h2 style="color:red;">*Use website in full-screen on a desktop/laptop</h2>
+</div>
 <div style="text-align: center;">
     <h2>Step 1: Enter an address</h2>
     <input id="address" type="text" placeholder="Enter an address">
@@ -188,8 +192,166 @@ async function generatePDF() {
     const canvasTable = await html2canvas(document.getElementById('table'));
     const imgDataTable = canvasTable.toDataURL('image/png');
 
+    const header0 = {
+        text: 'SkySight FastSquares Report', // Text for the center header
+        alignment: 'center',
+        color: 'black', // Text color
+        fontSize: 22, // Font size
+        margin: [0, 10, 0, 0], // Adjust margins as needed
+    };
+
+    const header1 = {
+        columns: [
+            {
+                width: '*',
+                stack: [
+                    {
+                        canvas: [
+                            {
+                                type: 'rect',
+                                x: -15,
+                                y: 0,
+                                w: 500, // Adjust width as needed
+                                h: 5, // Height of the first bar (dark blue)
+                                color: '#fff', // Dark blue color
+                            }
+                        ],
+                        width: 500,
+                        height: 5,
+                    }
+                ],
+                alignment: 'center',
+            }
+        ],
+    };
+    const header2 = {
+        columns: [
+            {
+                width: '*',
+                stack: [
+                    {
+                        canvas: [
+                            {
+                                type: 'rect',
+                                x: -15,
+                                y: 0,
+                                w: 500, // Adjust width as needed
+                                h: 20, // Height of the first bar (dark blue)
+                                color: '#003f5c', // Dark blue color
+                            }
+                        ],
+                        width: 500,
+                        height: 20,
+                    }
+                ],
+                alignment: 'center',
+            }
+        ],
+    };
+    const header3 = {
+        columns: [
+            {
+                width: '*',
+                stack: [
+                    {
+                        canvas: [
+                            {
+                                type: 'rect',
+                                x: -15,
+                                y: 0,
+                                w: 500, // Adjust width as needed
+                                h: 20, // Height of the first bar (dark blue)
+                                color: '#6497b1', // Dark blue color
+                            }
+                        ],
+                        width: 500,
+                        height: 20,
+                    }
+                ],
+                alignment: 'center',
+            }
+        ],
+    };
+    const header4 = {
+        columns: [
+            {
+                width: '*',
+                stack: [
+                    {
+                        canvas: [
+                            {
+                                type: 'rect',
+                                x: -15,
+                                y: 0,
+                                w: 500, // Adjust width as needed
+                                h: 10, // Height of the first bar (dark blue)
+                                color: '#fff', // Dark blue color
+                            }
+                        ],
+                        width: 500,
+                        height: 10,
+                    }
+                ],
+                alignment: 'center',
+            }
+        ],
+    };
+    const header5 = {
+        columns: [
+            {
+                width: '*',
+                stack: [
+                    {
+                        canvas: [
+                            {
+                                type: 'rect',
+                                x: -15,
+                                y: 0,
+                                w: 500, // Adjust width as needed
+                                h: 10, // Height of the first bar (dark blue)
+                                color: '#fff', // Dark blue color
+                            }
+                        ],
+                        width: 500,
+                        height: 10,
+                    }
+                ],
+                alignment: 'center',
+            }
+        ],
+    };
+    const header6 = {
+        columns: [
+            {
+                width: '*',
+                stack: [
+                    {
+                        canvas: [
+                            {
+                                type: 'rect',
+                                x: -15,
+                                y: 0,
+                                w: 500, // Adjust width as needed
+                                h: 10, // Height of the first bar (dark blue)
+                                color: '#003f5c', // Dark blue color
+                            }
+                        ],
+                        width: 500,
+                        height: 10,
+                    }
+                ],
+                alignment: 'center',
+            }
+        ],
+    };
+
     const docDefinition = {
         content: [
+            header0,
+            header1,
+            header2,
+            header3,
+            header4,
             {
                 image: imgDataMap,
                 width: 500  // Adjust width as needed
@@ -197,7 +359,9 @@ async function generatePDF() {
             {
                 image: imgDataTable,
                 width: 500  // Adjust width as needed
-            }
+            },
+            header5,
+            header6
         ]
     };
     pdfMake.createPdf(docDefinition).download('download.pdf');
