@@ -17,13 +17,9 @@
     <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfkit/0.12.2/pdfkit.js"></script>
     <style>
-        :root {
-            color-scheme: only light;
-        }
         body {
             background-color: white;
             color: black;
-            color-scheme: only light;
         }
         table, th, td {
             border: 1px solid black;
@@ -191,7 +187,7 @@ function updateRoofAreaTable(feature) {
 
     for(let i = 0; i <= 15; i++) {
         const adjustedArea = areaFt2 / Math.cos(Math.atan(i/12));
-        const row = `<tr><td>${i}</td><td id="cell${i.toString()}" style="background-color:black;">${adjustedArea.toFixed(2)}</td></tr>`;
+        const row = `<tr><td>${i}</td><td id="cell${i.toString()}" style="color:#406891; background-color:#406891;">${adjustedArea.toFixed(2)}</td></tr>`;
         tableBody.innerHTML += row;
     }
 }
@@ -199,7 +195,7 @@ function updateRoofAreaTable(feature) {
 function revealMeasurements() {
     for(let i = 0; i <= 15; i++) {
         var a=document.getElementById("cell"+i.toString());
-        a.style.background="white";
+        a.style.background="#878c91";
     }
 }
 
