@@ -9,6 +9,10 @@
 
         gtag('config', 'G-Y2E1745DBQ');
     </script>
+    <script>
+        var hasPaid=false;
+        var coords=null;
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instant $5 Roof Measurements</title>
@@ -21,23 +25,10 @@
             background-color: white;
             color: black;
         }
-        table, th, td {
-            border: 1px solid black;
-            border-collapse: collapse;
-            text-align: center;
-        }
-        th, td {
-            padding: 8px;
-        }
     </style>
 </head>
 <body>
 
-<div style="text-align: center;">
-    <h2 style="color:red;">*Use website in full-screen on a desktop/laptop</h2>
-</div>
-
-<!-- Add the download link for sample_report.pdf -->
 <div style="text-align: center;">
     <a href="sample_report.pdf" download>Download Sample Report (PDF)</a>
 </div>
@@ -77,7 +68,7 @@
                 });
             },
             onApprove: function(data, actions) {
-                revealMeasurements();
+                hasPaid=true;
                 return actions.order.capture().then(function(details) {
                     alert('Transaction completed by ' + details.payer.name.given_name + '!');
                 });
@@ -85,20 +76,6 @@
         }).render('#paypal-button-container');
 
     </script>
-</div>
-
-<div id="table" style="margin: 0 100px 0 100px;">
-    <table id="areaTable" style="width: 100%; margin-top: 20px;">
-        <thead>
-            <tr>
-                <th>Pitch Value</th>
-                <th>Roof Area (Squares)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Rows will be added here dynamically -->
-        </tbody>
-    </table>
 </div>
 
 <div style="text-align: center;">
@@ -122,6 +99,8 @@ const map = new mapboxgl.Map({
     zoom: 15,
     preserveDrawingBuffer: true
 });
+
+var table_data=Array();
 
 map.on('load', function() {
     map.addSource('buildings', {
@@ -158,20 +137,7 @@ map.on('load', function() {
         }
         const centroid = turf.centroid(feature);
         currentMarker = new mapboxgl.Marker().setLngLat(centroid.geometry.coordinates).addTo(map);
-        var hasTouchScreen = false;
-
-        var UA = navigator.userAgent;
-                hasTouchScreen = (
-                    /\b(BlackBerry|webOS|iPhone|IEMobile)\b/i.test(UA) ||
-                    /\b(Android|Windows Phone|iPad|iPod)\b/i.test(UA)
-                ); 
-
-        if (hasTouchScreen) {
-            // Device is likely mobile, so do stuff for mobile devices here.
-            alert("Please use website on desktop/laptop");
-        } else {
-            updateRoofAreaTable(feature);
-        }
+        coords=feature._geometry.coordinates;
     });
 });
 
@@ -192,183 +158,65 @@ function calculatePolygonArea(points) {
     const polygon = turf.polygon(points);
     const areaM2 = turf.area(polygon);
     const areaFt2 = areaM2 * 10.7639;
-    return (areaFt2/100).toFixed(1);
+    return areaFt2/100;
 }
 
-function updateRoofAreaTable(feature) {
-    const coords = feature._geometry.coordinates;
+function createMeasurements(feature) {
     areaFt2=calculatePolygonArea(coords);
-
-    const tableBody = document.getElementById('areaTable').querySelector('tbody');
-    tableBody.innerHTML = '';
-
     for(let i = 0; i <= 15; i++) {
-        const adjustedArea = areaFt2 / Math.cos(Math.atan(i/12));
-        const row = `<tr><td>${i}</td><td id="cell${i.toString()}" style="background-color:black;">${adjustedArea.toFixed(2)}</td></tr>`;
-        tableBody.innerHTML += row;
+        const adjustedArea = (areaFt2 / Math.cos(Math.atan(i/12))).toFixed(1);
+        table_data.push({key:i,value:adjustedArea});
     }
-}
-
-function revealMeasurements() {
-    for(let i = 0; i <= 15; i++) {
-        var a=document.getElementById("cell"+i.toString());
-        a.style.background="white";
-    }
+    return table_data;
 }
 
 async function generatePDF() {
+    if (!hasPaid) {
+        return;
+    }
     const imgDataMap = map.getCanvas().toDataURL();
 
-    const canvasTable = await html2canvas(document.getElementById('table'));
-    const imgDataTable = canvasTable.toDataURL('image/png');
-
-    const header0 = {
-        text: 'SkySight FastSquares Report', // Text for the center header
+    const title = {
+        text: 'SkySight FastSquares Report',
         alignment: 'center',
-        color: 'black', // Text color
-        fontSize: 22, // Font size
-        margin: [0, 10, 0, 0], // Adjust margins as needed
+        color: 'black',
+        fontSize: 22,
+        margin: [10, 10, 10, 10],
     };
 
-    const header1 = {
-        columns: [
-            {
-                width: '*',
-                stack: [
-                    {
-                        canvas: [
-                            {
-                                type: 'rect',
-                                x: -15,
-                                y: 0,
-                                w: 500, // Adjust width as needed
-                                h: 5, // Height of the first bar (dark blue)
-                                color: '#fff', // Dark blue color
-                            }
-                        ],
-                        width: 500,
-                        height: 5,
-                    }
-                ],
-                alignment: 'center',
-            }
-        ],
-    };
-    const header2 = {
-        columns: [
-            {
-                width: '*',
-                stack: [
-                    {
-                        canvas: [
-                            {
-                                type: 'rect',
-                                x: -15,
-                                y: 0,
-                                w: 500, // Adjust width as needed
-                                h: 20, // Height of the first bar (dark blue)
-                                color: '#003f5c', // Dark blue color
-                            }
-                        ],
-                        width: 500,
-                        height: 20,
-                    }
-                ],
-                alignment: 'center',
-            }
-        ],
-    };
-    const header3 = {
-        columns: [
-            {
-                width: '*',
-                stack: [
-                    {
-                        canvas: [
-                            {
-                                type: 'rect',
-                                x: -15,
-                                y: 0,
-                                w: 500, // Adjust width as needed
-                                h: 20, // Height of the first bar (dark blue)
-                                color: '#6497b1', // Dark blue color
-                            }
-                        ],
-                        width: 500,
-                        height: 20,
-                    }
-                ],
-                alignment: 'center',
-            }
-        ],
-    };
-    const header4 = {
-        columns: [
-            {
-                width: '*',
-                stack: [
-                    {
-                        canvas: [
-                            {
-                                type: 'rect',
-                                x: -15,
-                                y: 0,
-                                w: 500, // Adjust width as needed
-                                h: 10, // Height of the first bar (dark blue)
-                                color: '#fff', // Dark blue color
-                            }
-                        ],
-                        width: 500,
-                        height: 10,
-                    }
-                ],
-                alignment: 'center',
-            }
-        ],
-    };
-    const header5 = {
-        columns: [
-            {
-                width: '*',
-                stack: [
-                    {
-                        canvas: [
-                            {
-                                type: 'rect',
-                                x: -15,
-                                y: 0,
-                                w: 500, // Adjust width as needed
-                                h: 10, // Height of the first bar (dark blue)
-                                color: '#003f5c', // Dark blue color
-                            }
-                        ],
-                        width: 500,
-                        height: 10,
-                    }
-                ],
-                alignment: 'center',
-            }
-        ],
+    var table_data=createMeasurements()
+    // Create a table from the key-value pairs
+    const table = {
+        table: {
+            widths: ['*', '*'],
+            headerRows: 1,
+            body: [
+                [{ text: 'Pitch', style: 'tableHeader' }, { text: 'Area (squares)', style: 'tableHeader' }],
+                ...table_data.map(item => [item.key, item.value]),
+            ],
+        },
+        layout: 'lightHorizontalLines',
+        margin: [0, 10, 0, 0], // Adjust table margins as needed
     };
 
     const docDefinition = {
         content: [
-            header0,
-            header1,
-            header2,
-            header3,
+            title,
             {
                 image: imgDataMap,
-                width: 500  // Adjust width as needed
+                width: 500,
             },
-            {
-                image: imgDataTable,
-                width: 500  // Adjust width as needed
+            table, // Add the table here
+        ],
+        styles: {
+            tableHeader: {
+                bold: true,
+                fontSize: 13,
+                color: 'black',
             },
-            header4,
-            header5
-        ]
+        },
     };
+
     pdfMake.createPdf(docDefinition).download('download.pdf');
 }
 </script>
