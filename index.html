@@ -18,12 +18,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfkit/0.12.2/pdfkit.js"></script>
     <style>
         body {
-            background-color: white;
-            color: black;
+            background-color: black;
+            color: white;
             color-scheme: only light;
         }
         table, th, td {
-            border: 1px solid black;
+            border: 1px solid #0e355e;
             border-collapse: collapse;
             text-align: center;
         }
@@ -36,7 +36,7 @@
 
 <!-- Add the download link for sample_report.pdf -->
 <div style="text-align: center;">
-    <a href="sample_report.pdf" download>Download Sample Report (PDF)</a>
+    <a href="sample_report.pdf" style="color:white;" download>Download Sample Report (PDF)</a>
 </div>
 
 <div style="text-align: center;">
@@ -56,7 +56,7 @@
 </div>
 
 <div style="text-align: center;">
-    <h2>Step 3: Make $5 payment to reveal blacked-out measurements below</h2>
+    <h2>Step 3: Make $5 payment to reveal whited-out measurements below</h2>
     <div style="display: flex; justify-content: center; align-items: center;">
         <div id="paypal-button-container"></div>
     </div>
@@ -188,7 +188,7 @@ function updateRoofAreaTable(feature) {
 
     for(let i = 0; i <= 15; i++) {
         const adjustedArea = areaFt2 / Math.cos(Math.atan(i/12));
-        const row = `<tr><td>${i}</td><td id="cell${i.toString()}" style="color: black; background-color:black;">${adjustedArea.toFixed(2)}</td></tr>`;
+        const row = `<tr><td style="background-color:white; color:black;">${i}</td><td id="cell${i.toString()}" style="color: white; background-color:white;">${adjustedArea.toFixed(2)}</td></tr>`;
         tableBody.innerHTML += row;
     }
 }
