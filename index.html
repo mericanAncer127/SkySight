@@ -154,7 +154,20 @@ map.on('load', function() {
         }
         const centroid = turf.centroid(feature);
         currentMarker = new mapboxgl.Marker().setLngLat(centroid.geometry.coordinates).addTo(map);
-        updateRoofAreaTable(feature);
+        var hasTouchScreen = false;
+
+        var UA = navigator.userAgent;
+                hasTouchScreen = (
+                    /\b(BlackBerry|webOS|iPhone|IEMobile)\b/i.test(UA) ||
+                    /\b(Android|Windows Phone|iPad|iPod)\b/i.test(UA)
+                ); 
+
+        if (hasTouchScreen) {
+            // Device is likely mobile, so do stuff for mobile devices here.
+            alert("Please use website on desktop/laptop");
+        } else {
+            updateRoofAreaTable(feature);
+        }
     });
 });
 
