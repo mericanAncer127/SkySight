@@ -188,7 +188,7 @@ function updateRoofAreaTable(feature) {
 
     for(let i = 0; i <= 15; i++) {
         const adjustedArea = areaFt2 / Math.cos(Math.atan(i/12));
-        const row = `<tr><td>${i}</td><td id="cell${i.toString()}" style="background-color:black;">${adjustedArea.toFixed(2)}</td></tr>`;
+        const row = `<tr><td>${i}</td><td id="cell${i.toString()}" style="color: black; background-color:black;">${adjustedArea.toFixed(2)}</td></tr>`;
         tableBody.innerHTML += row;
     }
 }
