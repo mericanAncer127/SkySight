@@ -50,7 +50,7 @@
 </div>
 
 <div style="text-align: center;">
-    <h2>Step 3: Make $5 payment</h2>
+    <h2>Step 3: Make $3 payment</h2>
     <div style="display: flex; justify-content: center; align-items: center;">
         <div id="paypal-button-container"></div>
     </div>
@@ -62,7 +62,7 @@
                     purchase_units: [{
                         amount: {
                             currency_code: 'USD',
-                            value: '5.00'
+                            value: '3.00'
                         }
                     }]
                 });
@@ -171,11 +171,8 @@ function createMeasurements(feature) {
 }
 
 async function generatePDF() {
-    if (!hasPaid) {
-        return;
-    }
+    if (!hasPaid) { return; }
     const imgDataMap = map.getCanvas().toDataURL();
-
     const title = {
         text: 'SkySight FastSquares Report',
         alignment: 'center',
@@ -183,7 +180,6 @@ async function generatePDF() {
         fontSize: 22,
         margin: [10, 10, 10, 10],
     };
-
     var table_data=createMeasurements()
     // Create a table from the key-value pairs
     const table = {
@@ -198,7 +194,6 @@ async function generatePDF() {
         layout: 'lightHorizontalLines',
         margin: [0, 10, 0, 0], // Adjust table margins as needed
     };
-
     const docDefinition = {
         content: [
             title,
@@ -216,7 +211,6 @@ async function generatePDF() {
             },
         },
     };
-
     pdfMake.createPdf(docDefinition).download('download.pdf');
 }
 </script>
