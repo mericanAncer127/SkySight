@@ -213,6 +213,7 @@ async function generatePDF() {
         },
     };
     pdfMake.createPdf(docDefinition).download('download.pdf');
+    hasPaid=false;
 }
 </script>
 </body>
