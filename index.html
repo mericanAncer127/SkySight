@@ -27,16 +27,12 @@
             color: black;
         }
         .step-divider {
-            border-bottom: 10px solid #345782;
+            border-bottom: 25px solid #345782;
             margin: 20px 0;
         }
-        #page-container {
-        padding: 0px; /* Add padding to separate the border from the content */
-    }
     </style>
 </head>
 <body>
-<div id="page-container">
     <div style="text-align: center; padding-top:10px;">
         <a href="sample_report.pdf" download>Download Sample Report (PDF)</a>
     </div>
@@ -86,7 +82,7 @@
         </script>
     </div>
 
-    <div style="text-align: center;">
+    <div style="text-align: center; padding-bottom:20px;">
         <h2>Step 4: Download measurements</h2>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.min.js"></script>
@@ -223,6 +219,5 @@
         hasPaid=false;
     }
     </script>
-</div>
 </body>
 </html>
