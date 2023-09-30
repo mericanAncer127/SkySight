@@ -22,198 +22,207 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfkit/0.12.2/pdfkit.js"></script>
     <style>
         body {
+            font-family: Verdana;
             background-color: white;
             color: black;
         }
+        .step-divider {
+            border-bottom: 10px solid #345782;
+            margin: 20px 0;
+        }
+        #page-container {
+        padding: 0px; /* Add padding to separate the border from the content */
+    }
     </style>
 </head>
 <body>
-
-<div style="text-align: center;">
-    <a href="sample_report.pdf" download>Download Sample Report (PDF)</a>
-</div>
-
-<div style="text-align: center;">
-    <h4>Please contact skysightroofing@gmail.com with any questions or concerns</h4>
-</div>
-
-<div style="text-align: center; margin-bottom:10px;">
-    <h2>Step 1: Enter an address, or click on a roof</h2>
-    <input id="address" type="text" placeholder="Enter an address">
-    <button onclick="locateAddress()">Locate Address</button>
-</div>
-
-<div id="map" style="left:10%; right:10%; width: 80%; height: 400px;"></div>
-
-<div style="text-align: center;">
-    <h2>Step 2: Click on the roof you want measured</h2>
-</div>
-
-<div style="text-align: center;">
-    <h2>Step 3: Make $3 payment</h2>
-    <div style="display: flex; justify-content: center; align-items: center;">
-        <div id="paypal-button-container"></div>
+<div id="page-container">
+    <div style="text-align: center; padding-top:10px;">
+        <a href="sample_report.pdf" download>Download Sample Report (PDF)</a>
     </div>
-    <script src="https://www.paypal.com/sdk/js?client-id=ARzk0dbJaLT58q39nB78HwNM9tEQslBqvrmDbrh2Ktq0Av-linppFsiMBDgoxoYzU9OZopuCnZTV5w8m"></script>
-    <script>
-        paypal.Buttons({
-            createOrder: function(data, actions) {
-                return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            currency_code: 'USD',
-                            value: '3.00'
-                        }
-                    }]
-                });
-            },
-            onApprove: function(data, actions) {
-                hasPaid=true;
-                return actions.order.capture().then(function(details) {
-                    alert('Transaction completed by ' + details.payer.name.given_name + '!');
-                });
-            }
-        }).render('#paypal-button-container');
 
+    <div style="text-align: center;" class="step-divider">
+        <h4>Please contact skysightroofing@gmail.com with any questions or concerns</h4>
+    </div>
+
+    <div style="text-align: center; padding-bottom:10px;" class="step-divider">
+        <h2>Step 1: Enter an address, or click on a roof</h2>
+        <input id="address" type="text" placeholder="Enter an address">
+        <button onclick="locateAddress()">Locate Address</button>
+    </div>
+
+    <div id="map" style="left:10%; right:10%; width: 80%; height: 400px;"></div>
+
+    <div style="text-align: center;" class="step-divider">
+        <h2>Step 2: Click on the roof you want measured</h2>
+    </div>
+
+    <div style="text-align: center;" class="step-divider">
+        <h2>Step 3: Make $3 payment</h2>
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <div id="paypal-button-container"></div>
+        </div>
+        <script src="https://www.paypal.com/sdk/js?client-id=ARzk0dbJaLT58q39nB78HwNM9tEQslBqvrmDbrh2Ktq0Av-linppFsiMBDgoxoYzU9OZopuCnZTV5w8m"></script>
+        <script>
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                currency_code: 'USD',
+                                value: '3.00'
+                            }
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    hasPaid=true;
+                    return actions.order.capture().then(function(details) {
+                        alert('Transaction completed by ' + details.payer.name.given_name + '!');
+                    });
+                }
+            }).render('#paypal-button-container');
+
+        </script>
+    </div>
+
+    <div style="text-align: center;">
+        <h2>Step 4: Download measurements</h2>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/vfs_fonts.js"></script>
+        <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+        <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+        <button onclick="generatePDF()">Download PDF</button>
+    </div>
+
+    <script>
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjanVlbGRxbTUwNGVlNDlwcXRxNnFhYnlzIn0.-dc9uxSNW4TUYbC96E8zjA';
+    let currentMarker;
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [-74.006, 40.7128], // New York City as default
+        zoom: 15,
+        preserveDrawingBuffer: true
+    });
+
+    var table_data=Array();
+
+    map.on('load', function() {
+        map.addSource('buildings', {
+            type: 'vector',
+            url: 'mapbox://mapbox.mapbox-streets-v8'
+        });
+
+        map.addLayer({
+            'id': 'building-extrusion',
+            'type': 'fill-extrusion',
+            'source': 'buildings',
+            'source-layer': 'building',
+            'paint': {
+                'fill-extrusion-color': '#aaa',
+                'fill-extrusion-height': {
+                    'type': 'identity',
+                    'property': 'height'
+                }
+            }
+        });
+
+        map.on('mouseenter', 'building-extrusion', function() {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+
+        map.on('mouseleave', 'building-extrusion', function() {
+            map.getCanvas().style.cursor = '';
+        });
+
+        map.on('click', 'building-extrusion', function(e) {
+            const feature = e.features[0];
+            if (currentMarker) {
+                currentMarker.remove();
+            }
+            const centroid = turf.centroid(feature);
+            currentMarker = new mapboxgl.Marker().setLngLat(centroid.geometry.coordinates).addTo(map);
+            coords=feature._geometry.coordinates;
+        });
+    });
+
+    function locateAddress() {
+        const address = document.getElementById('address').value;
+        fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxgl.accessToken}`)
+        .then(response => response.json())
+        .then(data => {
+            const coordinates = data.features[0].geometry.coordinates;
+            if (currentMarker) {
+                currentMarker.remove();
+            }
+            map.flyTo({ center: coordinates, zoom: 18.5});
+        });
+    }
+
+    function calculatePolygonArea(points) {
+        const polygon = turf.polygon(points);
+        const areaM2 = turf.area(polygon);
+        const areaFt2 = areaM2 * 10.7639;
+        return areaFt2/100;
+    }
+
+    function createMeasurements(feature) {
+        areaFt2=calculatePolygonArea(coords);
+        for(let i = 0; i <= 15; i++) {
+            const adjustedArea = (areaFt2 / Math.cos(Math.atan(i/12))).toFixed(1);
+            table_data.push({key:i,value:adjustedArea});
+        }
+        return table_data;
+    }
+
+    async function generatePDF() {
+        if (!hasPaid) { return; }
+        const imgDataMap = map.getCanvas().toDataURL();
+        const title = {
+            text: 'SkySight FastSquares Report',
+            alignment: 'center',
+            color: 'black',
+            fontSize: 22,
+            margin: [10, 10, 10, 10],
+        };
+        var table_data=createMeasurements()
+        // Create a table from the key-value pairs
+        const table = {
+            table: {
+                widths: ['*', '*'],
+                headerRows: 1,
+                body: [
+                    [{ text: 'Pitch', style: 'tableHeader' }, { text: 'Area (squares)', style: 'tableHeader' }],
+                    ...table_data.map(item => [item.key, item.value]),
+                ],
+            },
+            layout: 'lightHorizontalLines',
+            margin: [0, 10, 0, 0], // Adjust table margins as needed
+        };
+        const docDefinition = {
+            content: [
+                title,
+                {
+                    image: imgDataMap,
+                    width: 500,
+                },
+                table, // Add the table here
+            ],
+            styles: {
+                tableHeader: {
+                    bold: true,
+                    fontSize: 13,
+                    color: 'black',
+                },
+            },
+        };
+        pdfMake.createPdf(docDefinition).download('download.pdf');
+        hasPaid=false;
+    }
     </script>
 </div>
-
-<div style="text-align: center;">
-    <h2>Step 4: Download measurements</h2>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/vfs_fonts.js"></script>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
-    <button onclick="generatePDF()">Download PDF</button>
-</div>
-
-<script>
-mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjanVlbGRxbTUwNGVlNDlwcXRxNnFhYnlzIn0.-dc9uxSNW4TUYbC96E8zjA';
-let currentMarker;
-
-const map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v11',
-    center: [-74.006, 40.7128], // New York City as default
-    zoom: 15,
-    preserveDrawingBuffer: true
-});
-
-var table_data=Array();
-
-map.on('load', function() {
-    map.addSource('buildings', {
-        type: 'vector',
-        url: 'mapbox://mapbox.mapbox-streets-v8'
-    });
-
-    map.addLayer({
-        'id': 'building-extrusion',
-        'type': 'fill-extrusion',
-        'source': 'buildings',
-        'source-layer': 'building',
-        'paint': {
-            'fill-extrusion-color': '#aaa',
-            'fill-extrusion-height': {
-                'type': 'identity',
-                'property': 'height'
-            }
-        }
-    });
-
-    map.on('mouseenter', 'building-extrusion', function() {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-
-    map.on('mouseleave', 'building-extrusion', function() {
-        map.getCanvas().style.cursor = '';
-    });
-
-    map.on('click', 'building-extrusion', function(e) {
-        const feature = e.features[0];
-        if (currentMarker) {
-            currentMarker.remove();
-        }
-        const centroid = turf.centroid(feature);
-        currentMarker = new mapboxgl.Marker().setLngLat(centroid.geometry.coordinates).addTo(map);
-        coords=feature._geometry.coordinates;
-    });
-});
-
-function locateAddress() {
-    const address = document.getElementById('address').value;
-    fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxgl.accessToken}`)
-    .then(response => response.json())
-    .then(data => {
-        const coordinates = data.features[0].geometry.coordinates;
-        if (currentMarker) {
-            currentMarker.remove();
-        }
-        map.flyTo({ center: coordinates, zoom: 18.5});
-    });
-}
-
-function calculatePolygonArea(points) {
-    const polygon = turf.polygon(points);
-    const areaM2 = turf.area(polygon);
-    const areaFt2 = areaM2 * 10.7639;
-    return areaFt2/100;
-}
-
-function createMeasurements(feature) {
-    areaFt2=calculatePolygonArea(coords);
-    for(let i = 0; i <= 15; i++) {
-        const adjustedArea = (areaFt2 / Math.cos(Math.atan(i/12))).toFixed(1);
-        table_data.push({key:i,value:adjustedArea});
-    }
-    return table_data;
-}
-
-async function generatePDF() {
-    if (!hasPaid) { return; }
-    const imgDataMap = map.getCanvas().toDataURL();
-    const title = {
-        text: 'SkySight FastSquares Report',
-        alignment: 'center',
-        color: 'black',
-        fontSize: 22,
-        margin: [10, 10, 10, 10],
-    };
-    var table_data=createMeasurements()
-    // Create a table from the key-value pairs
-    const table = {
-        table: {
-            widths: ['*', '*'],
-            headerRows: 1,
-            body: [
-                [{ text: 'Pitch', style: 'tableHeader' }, { text: 'Area (squares)', style: 'tableHeader' }],
-                ...table_data.map(item => [item.key, item.value]),
-            ],
-        },
-        layout: 'lightHorizontalLines',
-        margin: [0, 10, 0, 0], // Adjust table margins as needed
-    };
-    const docDefinition = {
-        content: [
-            title,
-            {
-                image: imgDataMap,
-                width: 500,
-            },
-            table, // Add the table here
-        ],
-        styles: {
-            tableHeader: {
-                bold: true,
-                fontSize: 13,
-                color: 'black',
-            },
-        },
-    };
-    pdfMake.createPdf(docDefinition).download('download.pdf');
-    hasPaid=false;
-}
-</script>
 </body>
 </html>
