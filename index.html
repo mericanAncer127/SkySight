@@ -16,8 +16,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instant $3 Roof Measurements</title>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfkit/0.12.2/pdfkit.js"></script>
     <style>
@@ -98,7 +98,7 @@
     const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
-        center: [-74.006, 40.7128], // New York City as default
+        center: [-74.006, 40.7128],
         zoom: 15,
         preserveDrawingBuffer: true
     });
@@ -117,14 +117,18 @@
             'source': 'buildings',
             'source-layer': 'building',
             'paint': {
-                'fill-extrusion-color': '#aaa',
+                'fill-extrusion-color': [
+                    'case',
+                    ['boolean', ['feature-state', 'selected'], false],
+                    '#52c765',
+                    '#aaa'
+                ],
                 'fill-extrusion-height': {
                     'type': 'identity',
                     'property': 'height'
                 }
             }
         });
-
         map.on('mouseenter', 'building-extrusion', function() {
             map.getCanvas().style.cursor = 'pointer';
         });
@@ -133,8 +137,22 @@
             map.getCanvas().style.cursor = '';
         });
 
+        var selectedBuildingID = null;
+
         map.on('click', 'building-extrusion', function(e) {
             const feature = e.features[0];
+            if (selectedBuildingID) {
+                map.setFeatureState(
+                    { source: 'buildings', sourceLayer: 'building', id: selectedBuildingID },
+                    { selected: false }
+                );
+            }
+
+            selectedBuildingID = feature.id;
+            map.setFeatureState(
+                { source: 'buildings', sourceLayer: 'building', id: selectedBuildingID },
+                { selected: true }
+            );
             if (currentMarker) {
                 currentMarker.remove();
             }
