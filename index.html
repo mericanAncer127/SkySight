@@ -10,12 +10,13 @@
         gtag('config', 'G-Y2E1745DBQ');
     </script>
     <script>
+        var hasPaid=false;
         var coords=null;
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Free Roof Measurements">
-    <meta name="keywords" content="Roof Measurements, Free Roof Measurements, Instant Roof Measurements, Roof Area Measurements">
+    <meta name="description" content="$1 Instant Roof Measurements">
+    <meta name="keywords" content="Roof Measurements, $1 Roof Measurements, Instant Roof Measurements, Roof Area Measurements">
     <title>Free Roof Measurements</title>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
@@ -34,7 +35,7 @@
 </head>
 <body>
     <div style="text-align: center;" class="step-divider">
-        <h1>Measure any roof in the world, for free</h1>
+        <h1>Measure any roof in the world, for just $1</h1>
     </div>
 
     <div style="text-align: center; padding-bottom:10px;">
@@ -52,8 +53,36 @@
         <h2>Step 1: Click on the roof you want measured</h2>
     </div>
 
+    <div style="text-align: center;" class="step-divider">
+        <h2>Step 2: Make $1 payment</h2>
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <div id="paypal-button-container"></div>
+        </div>
+        <script src="https://www.paypal.com/sdk/js?client-id=ARzk0dbJaLT58q39nB78HwNM9tEQslBqvrmDbrh2Ktq0Av-linppFsiMBDgoxoYzU9OZopuCnZTV5w8m"></script>
+        <script>
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                currency_code: 'USD',
+                                value: '1.00'
+                            }
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    hasPaid=true;
+                    return actions.order.capture().then(function(details) {
+                        alert('Transaction completed by ' + details.payer.name.given_name + '!');
+                    });
+                }
+            }).render('#paypal-button-container');
+
+        </script>
+    </div>
     <div style="text-align: center; padding-bottom:20px;">
-        <h2>Step 2: Download measurements</h2>
+        <h2>Step 3: Download measurements</h2>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/vfs_fonts.js"></script>
@@ -163,6 +192,7 @@
     }
 
     async function generatePDF() {
+        if (!hasPaid) {return;}
         const imgDataMap = map.getCanvas().toDataURL();
         const title = {
             text: 'SkySight FastSquares Report',
