@@ -23,18 +23,112 @@
     <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfkit/0.12.2/pdfkit.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Roboto Slab;
             background-color: white;
             color: black;
         }
-        .step-divider {
+
+        .header {
+            background-color: #f1f1f1;
+            padding: 30px;
+            text-align: center;
+        }
+
+        #navbar {
+            overflow: hidden;
+            background-color: #333;
+        }
+
+        #navbar a {
+            float: left;
+            display: block;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 17px;
+        }
+
+        #navbar a:hover {
+            background-color: #ddd;
             color: black;
-        }s
+        }
+
+        #navbar a.active {
+            background-color: #5889a3;
+            color: white;
+        }
+
+        .content {
+            padding: 16px;
+        }
+
+        .sticky {
+            position: fixed;
+            top: 0;
+            width: 100%;
+        }
+
+        .sticky + .content {
+            padding-top: 60px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #5889a3;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-color: #4a6f8a;
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 70%;
+            max-width: 400px;
+            margin-right: 10px;
+        }
+
+        a {
+            transition: 0.3s;
+        }
+
+        .step-divider {
+            padding: 20px 0;
+        }
     </style>
 </head>
 <body>
-    <div style="text-align: center;" class="step-divider">
+    <script>
+        function sendEmail() 
+        {
+            window.location = "mailto:skysightroofing@gmail.com";
+        }
+    </script>
+
+    <div id="navbar">
+        <a class="active" href="javascript:void(0)">SkySight</a>
+        <a href="javascript:void(0)" onclick="sendEmail();">Contact</a>
+    </div>
+
+    <div style="text-align: center; padding:10px;" class="step-divider">
         <h1>Measure any roof in the world, for just $1</h1>
     </div>
 
@@ -49,12 +143,12 @@
 
     <div id="map" style="left:10%; right:10%; width: 80%; height: 400px;"></div>
 
-    <div style="text-align: center;" class="step-divider">
+    <div style="text-align: center; padding:10px;" class="step-divider">
         <h2>Step 1: Click on the roof you want measured</h2>
     </div>
 
-    <div style="text-align: center;" class="step-divider">
-        <h2>Step 2: Make $1 payment</h2>
+    <div style="text-align: center; padding:10px;" class="step-divider">
+        <h2 style="padding:10px;">Step 2: Make $1 payment</h2>
         <div style="display: flex; justify-content: center; align-items: center;">
             <div id="paypal-button-container"></div>
         </div>
@@ -82,7 +176,7 @@
         </script>
     </div>
     <div style="text-align: center; padding-bottom:20px;">
-        <h2>Step 3: Download measurements</h2>
+        <h2 style="padding:10px;">Step 3: Download measurements</h2>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/vfs_fonts.js"></script>
