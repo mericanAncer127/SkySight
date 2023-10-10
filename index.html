@@ -284,6 +284,36 @@
         }
         return table_data;
     }
+    function toRadians(degree) {
+        return degree * (Math.PI / 180);
+    }
+
+    function haversineDistance(point1, point2) {
+        const R = 6371e3;
+        const lat1 = toRadians(point1[0]);
+        const lat2 = toRadians(point2[0]);
+        const deltaLat = toRadians(point2[0] - point1[0]);
+        const deltaLon = toRadians(point2[1] - point1[1]);
+
+        const a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) +
+                Math.cos(lat1) * Math.cos(lat2) *
+                Math.sin(deltaLon/2) * Math.sin(deltaLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return R * c;
+    }
+
+    function getPerimeterLength() {
+        let perimeter = 0;
+
+        for (let i = 0; i < coords[0].length - 1; i++) {
+            perimeter += haversineDistance(coords[0][i], coords[0][i + 1]);
+        }
+
+        perimeter += haversineDistance(coords[0][coords[0].length - 1], coords[0][0]);
+
+        return Math.round(perimeter * 3.28084 * 10)/10;
+    }
 
     async function generatePDF() {
         if (!hasPaid) {return;}
@@ -292,7 +322,14 @@
             text: 'SkySight FastSquares Report',
             alignment: 'center',
             color: 'black',
-            fontSize: 22,
+            fontSize: 18,
+            margin: [10, 10, 10, 10],
+        };
+        const perimeter = {
+            text: 'Perimeter Length: '+getPerimeterLength()+' feet',
+            alignment: 'center',
+            color: 'black',
+            fontSize: 12,
             margin: [10, 10, 10, 10],
         };
         var table_data=createMeasurements()
@@ -312,6 +349,7 @@
         const docDefinition = {
             content: [
                 title,
+                perimeter,
                 {
                     image: imgDataMap,
                     width: 500,
