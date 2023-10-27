@@ -277,6 +277,7 @@
     }
 
     function createMeasurements(feature) {
+        table_data=Array();
         areaFt2=calculatePolygonArea(coords);
         for(let i = 0; i <= 15; i++) {
             const adjustedArea = (areaFt2 / Math.cos(Math.atan(i/12))).toFixed(1);
