@@ -188,6 +188,7 @@
     <script>
     mapboxgl.accessToken = 'pk.eyJ1Ijoic2VjZmFzdCIsImEiOiJjbG13aDJtdWQwZ3BsMnVwNmV6ZzFxbWwwIn0.IcuFf7O8_BGMQiEB7Ireaw';
     let currentMarker;
+    let textLayerIDs=[];
 
     const map = new mapboxgl.Map({
         container: 'map',
@@ -253,8 +254,68 @@
             const centroid = turf.centroid(feature);
             currentMarker = new mapboxgl.Marker().setLngLat(centroid.geometry.coordinates).addTo(map);
             coords=feature._geometry.coordinates;
+
+            removeExistingTextLayers();
+
+            coords[0].forEach((coord, index) => {
+                if (index < coords[0].length - 1) {
+                    const point1 = coords[0][index];
+                    const point2 = coords[0][index + 1];
+                    const midpoint = calculateMidpoint(point1, point2);
+                    const distance = haversineDistance(point1, point2);
+                    const distanceInFeet = (distance * 3.28084).toFixed(1); // meters to feet
+                    const layerID = `line-distance-${index}-${Date.now()}`; // Unique ID using timestamp
+
+                    // Define a GeoJSON source for the text label
+                    map.addSource(layerID, {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            properties: {text: `${distanceInFeet} ft`},
+                            geometry: {
+                                type: 'Point',
+                                coordinates: midpoint
+                            }
+                        }
+                    });
+
+                    // Add a layer to display the text label
+                    map.addLayer({
+                        id: layerID,
+                        type: 'symbol',
+                        source: layerID,
+                        layout: {
+                            'text-field': ['get', 'text'],
+                            'text-size': 9,
+                        },
+                        paint: {
+                            'text-color': '#000000',
+                            'text-halo-color': '#FFF',
+                            'text-halo-width': 2,
+                        }
+                    });
+
+                    textLayerIDs.push(layerID);
+                }
+            });
         });
     });
+
+    function removeExistingTextLayers() {
+        textLayerIDs.forEach(function(layerID) {
+            if (map.getLayer(layerID)) {
+                map.removeLayer(layerID);
+            }
+            if (map.getSource(layerID)) {
+                map.removeSource(layerID);
+            }
+        });
+        textLayerIDs = [];
+    }
+
+    function calculateMidpoint(point1, point2) {
+        return [(point1[0] + point2[0]) / 2, (point1[1] + point2[1]) / 2];
+    }
 
     function locateAddress() {
         const address = document.getElementById('address').value;
