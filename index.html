@@ -113,6 +113,48 @@
         .step-divider {
             padding: 20px 0;
         }
+        .header {
+            background-image: url('roofs.jpeg');
+            background-size: cover; /* Cover the entire area of the header */
+            background-position: center; /* Center the background image */
+            padding: 30px; /* Adjust padding as necessary */
+            text-align: center;
+            position: relative;
+        }
+        .order-now-btn {
+            position: absolute; /* Position the button absolutely within its relative parent */
+            top: 50%; /* Center vertically, adjust as needed */
+            left: 50%; /* Center horizontally, adjust as needed */
+            transform: translate(-50%, -50%); /* Adjust the positioning accurately to the center */
+            padding: 10px 20px;
+            background-color: #5889a3; /* Your button color */
+            color: white; /* Text color */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 48px;
+        }
+
+        .header-content {
+            position: relative;
+            text-align: center;
+        }
+
+        .header-content img {
+            width: 100%;
+            height: auto;
+        }
+
+        .header-title {
+            position: absolute;
+            top: 20%; /* Adjust this value as needed */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white; /* White background */
+            padding: 10px 20px; /* Adjust padding as needed */
+            border-radius: 5px; /* Optional: adds rounded corners */
+            font-size: 48px;
+        }
     </style>
 </head>
 <body>
@@ -127,12 +169,13 @@
         <a class="active" href="javascript:void(0)">SkySight</a>
         <a href="javascript:void(0)" onclick="sendEmail();">Contact</a>
     </div>
-
-    <div style="text-align: center; padding:10px;" class="step-divider">
-        <h1>Measure any roof in the world, for just $9</h1>
+    <div class="header">
+        <img src="roofs.jpeg" alt="Header Image" style="width:100%; height:auto;">
+        <div class="header-title">Measure any roof in the world, for just $9</div>
+        <button class="order-now-btn" onclick="location.href='#start'">Order Now</button>
     </div>
 
-    <div style="text-align: center; padding-bottom:10px;">
+    <div id="start" style="text-align: center; padding-bottom:10px; padding-top:30px;">
         <a href="sample_report.pdf" download>Download Sample Report (PDF)</a>
     </div>
 
